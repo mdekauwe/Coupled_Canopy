@@ -46,6 +46,7 @@ def get_values(rh, Ca, tair, par, pressure, C):
         An_store.append(An) #umol m-2 s-1
         #An_store.append(An*12.*0.000001*86400.) # g C m-2 d-1
         tair_store.append(ta)
+
     return gs_store, et_store, An_store, tair_store
 
 if __name__ == '__main__':

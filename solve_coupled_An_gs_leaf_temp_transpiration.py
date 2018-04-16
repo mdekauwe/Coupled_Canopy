@@ -112,9 +112,9 @@ class CoupledModel(object):
 
 
             # Calculate new Tleaf, dleaf, Cs
-            (new_tleaf, et, le_et, gbH, gw) = self.calc_leaf_temp(P, Tleaf, tair, gsc,
-                                                           par, vpd, pressure,
-                                                           wind)
+            (new_tleaf, et,
+             le_et, gbH, gw) = self.calc_leaf_temp(P, Tleaf, tair, gsc,
+                                                   par, vpd, pressure, wind)
 
 
             gbc = gbH * c.GBH_2_GBC
@@ -134,8 +134,10 @@ class CoupledModel(object):
             if iter > self.iter_max:
                 raise Exception('No convergence: %d' % (iter))
 
+
             # Update temperature & do another iteration
             Tleaf = new_tleaf
+            #print(Tleaf)
             Tleaf_K = Tleaf + c.DEG_2_KELVIN
 
             iter += 1
@@ -143,6 +145,99 @@ class CoupledModel(object):
         gsw = gsc * c.GSC_2_GSW
 
         return (An, gsw, et, le_et)
+
+    def main_fast(self, tair, par, vpd, wind, pressure, Ca):
+        """
+        Version as above but using a solver for Tleaf, rather than iterating
+
+        Parameters:
+        ----------
+        tair : float
+            air temperature (deg C)
+        par : float
+            Photosynthetically active radiation (umol m-2 s-1)
+        vpd : float
+            Vapour pressure deficit (kPa, needs to be in Pa, see conversion
+            below)
+        wind : float
+            wind speed (m s-1)
+        pressure : float
+            air pressure (using constant) (Pa)
+        Ca : float
+            ambient CO2 concentration
+
+        Returns:
+        --------
+        An : float
+            net leaf assimilation (umol m-2 s-1)
+        gs : float
+            stomatal conductance (mol m-2 s-1)
+        et : float
+            transpiration (mol H2O m-2 s-1)
+        """
+
+        F = FarquharC3(theta_J=0.85, peaked_Jmax=True, peaked_Vcmax=True,
+                       model_Q10=True, gs_model=self.gs_model,
+                       gamma=self.gamma, g0=self.g0,
+                       g1=self.g1, D0=self.D0, alpha=self.alpha)
+        P = PenmanMonteith(self.leaf_width, self.leaf_absorptance)
+
+        # set initialise values
+        dleaf = vpd
+        dair = vpd
+        Cs = Ca
+        Tleaf = tair
+        Tleaf_K = Tleaf + c.DEG_2_KELVIN
+
+        (An, gsc) = F.calc_photosynthesis(Cs=Cs, Tleaf=Tleaf_K, Par=par,
+                                          Jmax25=self.Jmax25,
+                                          Vcmax25=self.Vcmax25,
+                                          Q10=self.Q10, Eaj=self.Eaj,
+                                          Eav=self.Eav,
+                                          deltaSj=self.deltaSj,
+                                          deltaSv=self.deltaSv,
+                                          Rd25=self.Rd25, Hdv=self.Hdv,
+                                          Hdj=self.Hdj, vpd=dleaf)
+
+        # Solve new Tleaf
+        from scipy import optimize
+        Tleaf = optimize.brent(self.fx, brack=(Tleaf-15, Tleaf+15),
+                               args=(P, Tleaf, gsc, par, vpd, pressure, wind))
+        #print(Tleaf)
+        Tleaf_K = Tleaf + c.DEG_2_KELVIN
+        (An, gsc) = F.calc_photosynthesis(Cs=Cs, Tleaf=Tleaf_K, Par=par,
+                                          Jmax25=self.Jmax25,
+                                          Vcmax25=self.Vcmax25,
+                                          Q10=self.Q10, Eaj=self.Eaj,
+                                          Eav=self.Eav,
+                                          deltaSj=self.deltaSj,
+                                          deltaSv=self.deltaSv,
+                                          Rd25=self.Rd25, Hdv=self.Hdv,
+                                          Hdj=self.Hdj, vpd=dleaf)
+
+        # Clunking, but I can't be arsed to rewrite, need to get other vars
+        # back
+        (et, le_et,
+         gbH, gw) = self.calc_leaf_temp_solved(P, Tleaf, tair, gsc,
+                                               par, vpd, pressure, wind)
+
+        gbc = gbH * c.GBH_2_GBC
+        Cs = Ca - An / gbc # boundary layer of leaf
+        if et == 0.0 or gw == 0.0:
+            dleaf = dair
+        else:
+            dleaf = (et * pressure / gw) * c.PA_2_KPA # kPa
+
+        gsw = gsc * c.GSC_2_GSW
+
+        return (An, gsw, et, le_et)
+
+    def fx(self, old_Tleaf, P, tair, gsc, par, vpd, pressure, wind):
+        (new_tleaf,
+         et, le_et, gbH, gw) = self.calc_leaf_temp(P, old_Tleaf, tair, gsc,
+                                                   par, vpd, pressure,
+                                                   wind)
+        return (new_tleaf - old_Tleaf)**2
 
     def calc_leaf_temp(self, P=None, tleaf=None, tair=None, gsc=None, par=None,
                        vpd=None, pressure=None, wind=None):
@@ -211,6 +306,65 @@ class CoupledModel(object):
         new_Tleaf = tair + delta_T
 
         return (new_Tleaf, et, le_et, gbH, gw)
+
+    def calc_leaf_temp_solved(self, P=None, tleaf=None, tair=None, gsc=None,
+                              par=None, vpd=None, pressure=None, wind=None):
+        """
+        Resolve leaf temp
+
+        Parameters:
+        ----------
+        P : object
+            Penman-Montheith class instance
+        tleaf : float
+            leaf temperature (deg C)
+        tair : float
+            air temperature (deg C)
+        gs : float
+            stomatal conductance (mol m-2 s-1)
+        par : float
+            Photosynthetically active radiation (umol m-2 s-1)
+        vpd : float
+            Vapour pressure deficit (kPa, needs to be in Pa, see conversion
+            below)
+        pressure : float
+            air pressure (using constant) (Pa)
+        wind : float
+            wind speed (m s-1)
+
+        Returns:
+        --------
+        new_Tleaf : float
+            new leaf temperature (deg C)
+        et : float
+            transpiration (mol H2O m-2 s-1)
+        gbH : float
+            total boundary layer conductance to heat for one side of the leaf
+        gw : float
+            total leaf conductance to water vapour (mol m-2 s-1)
+        """
+        tleaf_k = tleaf + c.DEG_2_KELVIN
+        tair_k = tair + c.DEG_2_KELVIN
+
+        air_density = pressure / (c.RSPECIFC_DRY_AIR * tair_k)
+
+        # convert from mm s-1 to mol m-2 s-1
+        cmolar = pressure / (c.RGAS * tair_k)
+
+        # W m-2 = J m-2 s-1
+        rnet = P.calc_rnet(par, tair, tair_k, tleaf_k, vpd, pressure)
+
+        (grn, gh, gbH, gw) = P.calc_conductances(tair_k, tleaf, tair,
+                                                 wind, gsc, cmolar)
+        if gsc == 0.0:
+            et = 0.0
+            le_et = 0.0
+        else:
+            (et, le_et) = P.calc_et(tleaf, tair, vpd, pressure, wind, par,
+                                    gh, gw, rnet)
+
+        return (et, le_et, gbH, gw)
+
 
 if __name__ == '__main__':
 
