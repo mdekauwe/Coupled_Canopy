@@ -16,6 +16,7 @@ import numpy as np
 import os
 import math
 
+import constants as c
 from farq import FarquharC3
 from penman_monteith_leaf import PenmanMonteith
 
@@ -47,28 +48,9 @@ class CoupledModel(object):
         self.gs_model = gs_model
         self.iter_max = iter_max
 
-        # Constants
-        self.GBC_2_GBH = 1.32
-        self.GBH_2_GBC = 1.0 / self.GBC_2_GBH
-
-        self.deg2kelvin = 273.15
-        self.kpa_2_pa = 1000.
-        self.pa_2_kpa = 1.0 / self.kpa_2_pa
-
-        self.sigma = 5.6704E-08       # stefan boltzmann constant, (w m-2 k-4)
         self.emissivity_leaf = 0.99   # emissivity of leaf (-)
-        self.cp = 1010.0              # specific heat of dry air (j kg-1 k-1)
-        self.h2olv0 = 2.501E6         # latent heat H2O (J kg-1)
-        self.h2omw = 18E-3            # mol mass H20 (kg mol-1)
-        self.air_mass = 29.0E-3       # mol mass air (kg mol-1)
-        self.umol_to_j = 4.57         # conversion from J to umol quanta
-        self.dheat = 21.5E-6          # molecular diffusivity for heat
-        self.RGAS = 8.314
         self.leaf_absorptance = leaf_absorptance # leaf abs of solar rad [0,1]
-        self.Rspecifc_dry_air = 287.058 # Jkg-1 K-1
 
-        self.GSC_2_GSW = 1.57
-        self.GSW_2_GSC = 1.0 / self.GSC_2_GSW
 
     def main(self, tair, par, vpd, wind, pressure, Ca):
         """
@@ -108,7 +90,7 @@ class CoupledModel(object):
         dair = vpd
         Cs = Ca
         Tleaf = tair
-        Tleaf_K = Tleaf + self.deg2kelvin
+        Tleaf_K = Tleaf + c.DEG_2_KELVIN
 
         #print "Start: %.3f %.3f %.3f" % (Cs, Tleaf, dleaf)
         #print
@@ -134,12 +116,12 @@ class CoupledModel(object):
                                                            wind)
 
 
-            gbc = gbH * self.GBH_2_GBC
+            gbc = gbH * c.GBH_2_GBC
             Cs = Ca - An / gbc # boundary layer of leaf
             if et == 0.0 or gw == 0.0:
                 dleaf = dair
             else:
-                dleaf = (et * pressure / gw) * self.pa_2_kpa # kPa
+                dleaf = (et * pressure / gw) * c.PA_2_KPA # kPa
 
 
             #print "%f %f %f %f %f %f" %  (Cs, Tleaf, dleaf, An*12.*0.000001*86400., gs, et*18*0.001*86400.)
@@ -153,11 +135,11 @@ class CoupledModel(object):
 
             # Update temperature & do another iteration
             Tleaf = new_tleaf
-            Tleaf_K = Tleaf + self.deg2kelvin
+            Tleaf_K = Tleaf + c.DEG_2_KELVIN
 
             iter += 1
 
-        gsw = gsc * self.GSC_2_GSW
+        gsw = gsc * c.GSC_2_GSW
 
         return (An, gsw, et, le_et)
 
@@ -197,13 +179,13 @@ class CoupledModel(object):
         gw : float
             total leaf conductance to water vapour (mol m-2 s-1)
         """
-        tleaf_k = tleaf + self.deg2kelvin
-        tair_k = tair + self.deg2kelvin
+        tleaf_k = tleaf + c.DEG_2_KELVIN
+        tair_k = tair + c.DEG_2_KELVIN
 
-        air_density = pressure / (self.Rspecifc_dry_air * tair_k)
+        air_density = pressure / (c.RSPECIFC_DRY_AIR * tair_k)
 
         # convert from mm s-1 to mol m-2 s-1
-        cmolar = pressure / (self.RGAS * tair_k)
+        cmolar = pressure / (c.RGAS * tair_k)
 
         # W m-2 = J m-2 s-1
         rnet = P.calc_rnet(par, tair, tair_k, tleaf_k, vpd, pressure)
@@ -224,8 +206,7 @@ class CoupledModel(object):
         sensible_heat = Y * (rnet - le_et)
 
         # leaf-air temperature difference recalculated from energy balance.
-        #delta_T = sensible_heat / (self.cp * air_density * (gh / cmolar))
-        delta_T = (rnet - le_et) / (self.cp * self.air_mass * gh)
+        delta_T = (rnet - le_et) / (c.CP * c.AIR_MASS * gh)
         new_Tleaf = tair + delta_T
 
         return (new_Tleaf, et, le_et, gbH, gw)

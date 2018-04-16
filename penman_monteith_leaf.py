@@ -68,7 +68,7 @@ class PenmanMonteith(object):
             latent heat flux (W m-2)
         """
         # latent heat of water vapour at air temperature (j mol-1)
-        lambda_et = (c.h2olv0 - 2.365E3 * tair) * c.h2omw
+        lambda_et = (c.H2OLV0 - 2.365E3 * tair) * c.H2OMW
 
         # slope of sat. water vapour pressure (e_sat) to temperature curve
         # (pa K-1), note kelvin conversion in func
@@ -246,7 +246,7 @@ class PenmanMonteith(object):
         tleaf_k = tleaf + DEG_TO_KELVIN
         tair_k = tair + DEG_TO_KELVIN
 
-        air_density = pressure  / (self.Rspecifc_dry_air * tair_k)
+        air_density = pressure  / (c.RSPECIFC_DRY_AIR * tair_k)
         cmolar = pressure  / (RGAS * tair_k)
         rnet = P.calc_rnet(par, tair, tair_k, tleaf_k, vpd, pressure)
 
