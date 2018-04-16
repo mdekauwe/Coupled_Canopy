@@ -67,14 +67,13 @@ class PenmanMonteith(object):
         lambda_et : float
             latent heat flux (W m-2)
         """
-        # latent heat of water vapour at air temperature (j mol-1)
+        # latent heat of water vapour at air temperature (J mol-1)
         lambda_et = (c.H2OLV0 - 2.365E3 * tair) * c.H2OMW
 
         # slope of sat. water vapour pressure (e_sat) to temperature curve
-        # (pa K-1), note kelvin conversion in func
+        # (Pa K-1), note kelvin conversion in func
         slope = ((calc_esat(tair + 0.1, pressure) -
                   calc_esat(tair, pressure)) / 0.1)
-        #slope = self.calc_slope_of_saturation_vapour_pressure_curve(tair)
 
         # psychrometric constant
         gamma = c.CP * c.AIR_MASS * pressure / lambda_et

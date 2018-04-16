@@ -250,4 +250,4 @@ if __name__ == '__main__':
     C = CoupledModel(g0, g1, D0, gamma, Vcmax25, Jmax25, Rd25, Eaj, Eav, deltaSj,
                      deltaSv, Hdv, Hdj, Q10, leaf_width, leaf_absorptance,
                      gs_model="leuning")
-    (An, gs, et) = C.main(tair, par, vpd, wind, pressure, Ca)
+    (An, gsw, et, le_et) = C.main(tair, par, vpd, wind, pressure, Ca)
