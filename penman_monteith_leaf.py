@@ -213,7 +213,7 @@ class PenmanMonteith(object):
         """
 
         # Short wave radiation (W m-2)
-        SW_rad = par * c.PAR_2_SW
+        sw_rad = par * c.PAR_2_SW
 
         # absorbed short-wave radiation
         #SW_abs = self.SW_abs * math.cos(math.radians(self.angle)) * SW_rad
@@ -230,7 +230,7 @@ class PenmanMonteith(object):
         net_lw_rad = (1.0 - emissivity_atm) * c.SIGMA * tair_k**4
 
         # isothermal net radiation (W m-2)
-        rnet = self.SW_abs * SW_rad - net_lw_rad #* kd * exp(-kd * s->lai)
+        rnet = self.SW_abs * sw_rad - net_lw_rad #* kd * exp(-kd * s->lai)
 
         return rnet
 
