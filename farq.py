@@ -304,6 +304,21 @@ class FarquharC3(object):
         else:
             Ci = Cic
 
+        """
+        # Limitation by triose-phosphate utilization
+        TPU = 1000.
+        alphag = 0.0
+        Ap = (3.0 * TPU * (Ci - gamma_star) /
+                (Ci - (1.0 + 3.0 * alphag) * gamma_star))
+        if Ci < 400:
+            Ap = 1000.
+
+        if Ap < Am:
+            print("TPUlim")
+
+        Am = -self.quadratic(a=1.0 - 1E-07, b=Am + Ap, c=Am * Ap, large=True)
+        """
+        
         # Hyperbolic minimum.
         Am = -self.quadratic(a=1.0 - 1E-04, b=Ac + Aj, c=Ac * Aj, large=True)
 
