@@ -243,9 +243,12 @@ class FarquharC3(object):
             ci_over_ca = 1.0 - 1.6 * (1.0 + vpd / self.D0) / self.g1
 
         elif self.gs_model == "medlyn":
-            # I want a zero g0, but zero messes up the convergence, numerical
-            # fix
-            g0 = 1E-09
+            if math.isclose(self.g0, 0.0):
+                # I want a zero g0, but zero messes up the convergence, numerical
+                # fix
+                g0 = 1E-09
+            else:
+                g0 = self.g0 * c.GSW_2_GSC
             if vpd < 0.05:
                 vpd = 0.05
 
