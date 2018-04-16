@@ -80,8 +80,9 @@ class CoupledModel(object):
             transpiration (mol H2O m-2 s-1)
         """
 
-        F = FarquharC3(peaked_Jmax=True, peaked_Vcmax=True, model_Q10=True,
-                       gs_model=self.gs_model, gamma=self.gamma, g0=self.g0,
+        F = FarquharC3(theta_J=0.85, peaked_Jmax=True, peaked_Vcmax=True,
+                       model_Q10=True, gs_model=self.gs_model,
+                       gamma=self.gamma, g0=self.g0,
                        g1=self.g1, D0=self.D0, alpha=self.alpha)
         P = PenmanMonteith(self.leaf_width, self.leaf_absorptance)
 
