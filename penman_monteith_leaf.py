@@ -17,34 +17,17 @@ __email__ = "mdekauwe@gmail.com"
 import math
 import sys
 from utils import calc_esat
+import constants as c
 
 class PenmanMonteith(object):
 
     def __init__(self, leaf_width, SW_abs, angle=35.0):
 
-        self.kpa_2_pa = 1000.
-        self.sigma = 5.6704E-08        # Stefan-Boltzmann constant, (w m-2 k-4)
         self.emissivity_leaf = 0.98    # emissivity of leaf (-)
-        self.cp = 1010.0               # specific heat of dry air (j kg-1 k-1)
-        self.h2olv0 = 2.501e6          # latent heat H2O (J kg-1)
-        self.h2omw = 18E-3             # mol mass H20 (kg mol-1)
-        self.air_mass = 29.0E-3        # mol mass air (kg mol-1)
-        self.umol_to_j = 4.57          # conversion from J to umol quanta
-        self.dheat = 21.5E-6           # molecular diffusivity for heat (m2 s-1)
-        self.DEG_TO_KELVIN = 273.15
-        self.RGAS = 8.314               # universal gas constant (mol-1 K-1)
         self.SW_abs = SW_abs            # absorptance to short-wave radiation
         self.leaf_width = leaf_width    # (m)
-        self.Rspecifc_dry_air = 287.058 # Jkg-1 K-1
-
-        self.GSC_2_GSW = 1.57
-        self.GSW_2_GSC = 1.0 / self.GSC_2_GSW
-        self.GBH_2_GBW = 1.075
-
         self.angle = angle              # angle from horizontal (deg) 0-90
-        #self.PAR_2_SW = 2.0 / self.umol_to_j
-        self.SW_2_PAR = 2.3
-        self.PAR_2_SW = 1.0 / self.SW_2_PAR
+
 
     def calc_et(self, tleaf, tair, vpd, pressure, wind, par, gh, gw,
                 rnet):
@@ -85,7 +68,7 @@ class PenmanMonteith(object):
             latent heat flux (W m-2)
         """
         # latent heat of water vapour at air temperature (j mol-1)
-        lambda_et = (self.h2olv0 - 2.365E3 * tair) * self.h2omw
+        lambda_et = (c.h2olv0 - 2.365E3 * tair) * c.h2omw
 
         # slope of sat. water vapour pressure (e_sat) to temperature curve
         # (pa K-1), note kelvin conversion in func
@@ -94,11 +77,10 @@ class PenmanMonteith(object):
         #slope = self.calc_slope_of_saturation_vapour_pressure_curve(tair)
 
         # psychrometric constant
-        gamma = self.cp * self.air_mass * pressure / lambda_et
+        gamma = c.CP * c.AIR_MASS * pressure / lambda_et
 
         # Y cancels in eqn 10
-        arg1 = (slope * rnet + (vpd * self.kpa_2_pa) * gh * self.cp *
-                self.air_mass)
+        arg1 = slope * rnet + (vpd * c.KPA_2_PA) * gh * c.CP * c.AIR_MASS
         arg2 = slope + gamma * gh / gw
 
         # W m-2
@@ -153,8 +135,8 @@ class PenmanMonteith(object):
         """
 
         # radiation conductance (mol m-2 s-1)
-        grn = ((4.0 * self.sigma * tair_k**3 * self.emissivity_leaf) /
-               (self.cp * self.air_mass))
+        grn = ((4.0 * c.SIGMA * tair_k**3 * self.emissivity_leaf) /
+               (c.CP * c.AIR_MASS))
 
         # boundary layer conductance for 1 side of leaf from forced convection
         # (mol m-2 s-1)
@@ -166,7 +148,7 @@ class PenmanMonteith(object):
 
             # boundary layer conductance for free convection
             # (mol m-2 s-1)
-            gbHf = 0.5 * self.dheat * grashof_num**0.25 / self.leaf_width * cmolar
+            gbHf = 0.5 * c.DHEAT * grashof_num**0.25 / self.leaf_width * cmolar
         else:
             gbHf = 0.0
 
@@ -179,8 +161,8 @@ class PenmanMonteith(object):
         gh = 2.0 * (gbH + grn)
 
         # total leaf conductance to water vapour (mol m-2 s-1)
-        gbw = gbH * self.GBH_2_GBW
-        gsw = gsc * self.GSC_2_GSW
+        gbw = gbH * c.GBH_2_GBW
+        gsw = gsc * c.GSC_2_GSW
         gw = (gbw * gsw) / (gbw + gsw)
 
         return (grn, gh, gbH, gw)
@@ -218,13 +200,13 @@ class PenmanMonteith(object):
         """
 
         # Short wave radiation (W m-2)
-        SW_rad = par * self.PAR_2_SW
+        SW_rad = par * c.PAR_2_SW
 
         # absorbed short-wave radiation
         #SW_abs = self.SW_abs * math.cos(math.radians(self.angle)) * SW_rad
 
         # atmospheric water vapour pressure (Pa)
-        ea = max(0.0, calc_esat(tair, pressure) - (vpd * self.kpa_2_pa))
+        ea = max(0.0, calc_esat(tair, pressure) - (vpd * c.KPA_2_PA))
 
         # apparent emissivity for a hemisphere radiating at air temperature
         # eqn D4
@@ -232,7 +214,7 @@ class PenmanMonteith(object):
 
         # isothermal net LW radiaiton at top of canopy, assuming emissivity of
         # the canopy is 1
-        net_lw_rad = (1.0 - emissivity_atm) * self.sigma * tair_k**4
+        net_lw_rad = (1.0 - emissivity_atm) * c.SIGMA * tair_k**4
 
         # isothermal net radiation (W m-2)
         rnet = self.SW_abs * SW_rad - net_lw_rad #* kd * exp(-kd * s->lai)
@@ -256,7 +238,7 @@ class PenmanMonteith(object):
         t = tair + 237.3
         arg1 = 4098.0 * (0.6108 * math.exp((17.27 * tair) / t))
         arg2 = t**2
-        return (arg1 / arg2) * self.kpa_2_pa
+        return (arg1 / arg2) * c.KPA_2_PA
 
 
     def main(self, tleaf, tair, gs, vpd, pressure, wind, par):
