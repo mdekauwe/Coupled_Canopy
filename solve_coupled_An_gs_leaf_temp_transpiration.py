@@ -137,11 +137,11 @@ class CoupledModel(object):
 
             # Update temperature & do another iteration
             Tleaf = new_tleaf
-            #print(Tleaf)
+
             Tleaf_K = Tleaf + c.DEG_2_KELVIN
 
             iter += 1
-
+        #print(Tleaf)
         gsw = gsc * c.GSC_2_GSW
 
         return (An, gsw, et, le_et)
