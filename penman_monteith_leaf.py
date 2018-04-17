@@ -149,7 +149,7 @@ class PenmanMonteith(object):
 
         # radiation conductance (mol m-2 s-1)
         grn = ((4.0 * c.SIGMA * tair_k**3 * self.emissivity_leaf) /
-               (c.CP * c.AIR_MASS))
+               (c.CP * c.AIR_MASS)) * cmolar
 
         # boundary layer conductance for 1 side of leaf from forced convection
         # (mol m-2 s-1)

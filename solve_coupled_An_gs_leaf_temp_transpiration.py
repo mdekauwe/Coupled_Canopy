@@ -304,14 +304,14 @@ class CoupledModel(object):
 
         # D6 in Leuning. NB I'm doubling conductances, see note below E5.
         # Leuning isn't explicit about grn but I think this is right
-        Y = 1.0 / (1.0 + (2.0 * grn) / (2.0 * gbH))
+        Y = 1.0 / (1.0 + (2.0 * (grn / cmolar)) / (2.0 * (gbH / cmolar)))
 
         # sensible heat exchanged between leaf and surroundings
         H = Y * (rnet - le_et)
 
         # leaf-air temperature difference recalculated from energy balance.
         # NB. I'm using gh here to include grn and the doubling of conductances
-        new_Tleaf = tair + H / (c.CP * c.AIR_MASS * gh)
+        new_Tleaf = tair + H / (c.CP * air_density * (gh / cmolar))
 
         return (new_Tleaf, et, le_et, gbH, gw)
 
