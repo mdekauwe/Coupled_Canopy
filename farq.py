@@ -318,7 +318,7 @@ class FarquharC3(object):
 
         Am = -self.quadratic(a=1.0 - 1E-07, b=Am + Ap, c=Am * Ap, large=True)
         """
-        
+
         # Hyperbolic minimum.
         Am = -self.quadratic(a=1.0 - 1E-04, b=Ac + Aj, c=Ac * Aj, large=True)
 
@@ -547,25 +547,25 @@ class FarquharC3(object):
         val : float
             positive root
         """
-        d = b**2 - 4.0 * a * c # discriminant
+        d = b**2.0 - 4.0 * a * c # discriminant
         if d < 0.0:
             raise ValueError('imaginary root found')
         #root1 = np.where(d>0.0, (-b - np.sqrt(d)) / (2.0 * a), d)
         #root2 = np.where(d>0.0, (-b + np.sqrt(d)) / (2.0 * a), d)
 
         if large:
-            if a == 0.0 and b > 0.0:
+            if math.isclose(a, 0.0) and b > 0.0:
                 root = -c / b
-            elif a == 0.0 and b == 0.0:
+            elif math.isclose(a, 0.0) and math.isclose(b, 0.0):
                 root = 0.0
                 if c != 0.0:
                     raise ValueError('Cant solve quadratic')
             else:
                 root = (-b + np.sqrt(d)) / (2.0 * a)
         else:
-            if a == 0.0 and b > 0.0:
+            if math.isclose(a, 0.0) and b > 0.0:
                 root = -c / b
-            elif a == 0.0 and b == 0.0:
+            elif math.isclose(a, 0.0) and math.isclose(b, 0.0):
                 root == 0.0
                 if c != 0.0:
                     raise ValueError('Cant solve quadratic')
