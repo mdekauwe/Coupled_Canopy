@@ -308,7 +308,6 @@ class CoupledModel(object):
         # cancels.
         Y = 1.0 / (1.0 + (2.0 * grn) / (2.0 * gbH))
 
-        print(Y)
         # sensible heat exchanged between leaf and surroundings
         H = Y * (rnet - le_et)
 
