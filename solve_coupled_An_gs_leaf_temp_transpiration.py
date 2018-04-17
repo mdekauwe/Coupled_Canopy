@@ -118,7 +118,12 @@ class CoupledModel(object):
 
 
             gbc = gbH * c.GBH_2_GBC
-            Cs = Ca - An / gbc # boundary layer of leaf
+            #Cs = Ca - An / gbc # boundary layer of leaf
+            if gbc > 0.0 and An > 0.0:
+                Cs = Ca - An / gbc # boundary layer of leaf
+            else:
+                Cs = Ca
+
             if et == 0.0 or gw == 0.0:
                 dleaf = dair
             else:

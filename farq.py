@@ -334,6 +334,11 @@ class FarquharC3(object):
 
         gsw = gsc * c.GSC_2_GSW
 
+        #if gsc > 0.0 and An > 0.0:
+        #    Ci = Cs - An / gsc
+        #else:
+        #    Ci = Cs
+
         return (An, gsc)
 
     def adj_for_low_temp(self, param, Tk, lower_bound=0.0, upper_bound=10.0):
