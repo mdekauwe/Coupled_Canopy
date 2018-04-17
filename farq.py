@@ -287,11 +287,13 @@ class FarquharC3(object):
             # intercellular CO2 concentration
             Cij = self.quadratic(a=A, b=B, c=C, large=True)
 
-        if Cic <= 0.0 or Cic > Cs:
-            Ac = 0.0
-        else:
-            Ac = self.assim(Cic, gamma_star, a1=Vcmax, a2=Km)
-
+        # This is in MAESTRA but I've commented it out to be consistent with
+        # plantecophys. I think this really should be in rather than out though!
+        #if Cic <= 0.0 or Cic > Cs:
+        #    Ac = 0.0
+        #else:
+        #    Ac = self.assim(Cic, gamma_star, a1=Vcmax, a2=Km)
+        Ac = self.assim(Cic, gamma_star, a1=Vcmax, a2=Km)
         Aj = self.assim(Cij, gamma_star, a1=Vj, a2=2.0*gamma_star)
 
         # When below light-compensation points, assume Ci=Ca.
