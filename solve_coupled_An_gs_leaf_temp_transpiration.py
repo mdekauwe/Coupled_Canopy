@@ -25,7 +25,7 @@ class CoupledModel(object):
 
     def __init__(self, g0, g1, D0, gamma, Vcmax25, Jmax25, Rd25, Eaj, Eav,
                  deltaSj, deltaSv, Hdv, Hdj, Q10, leaf_width, SW_abs,
-                 gs_model, alpha=None, leaf_absorptance=0.5, iter_max=100):
+                 gs_model, alpha=None, iter_max=100):
 
         # set params
         self.g0 = g0
@@ -44,12 +44,11 @@ class CoupledModel(object):
         self.Q10 = Q10
         self.leaf_width = leaf_width
         self.alpha = alpha
-        self.SW_abs = SW_abs
+        self.SW_abs = SW_abs # leaf abs of solar rad [0,1]
         self.gs_model = gs_model
         self.iter_max = iter_max
 
         self.emissivity_leaf = 0.99   # emissivity of leaf (-)
-        self.leaf_absorptance = leaf_absorptance # leaf abs of solar rad [0,1]
 
 
     def main(self, tair, par, vpd, wind, pressure, Ca):
@@ -84,7 +83,7 @@ class CoupledModel(object):
                        model_Q10=True, gs_model=self.gs_model,
                        gamma=self.gamma, g0=self.g0,
                        g1=self.g1, D0=self.D0, alpha=self.alpha)
-        P = PenmanMonteith(self.leaf_width, self.leaf_absorptance)
+        P = PenmanMonteith(self.leaf_width, self.SW_abs)
 
         # set initialise values
         dleaf = vpd
@@ -185,7 +184,7 @@ class CoupledModel(object):
                        model_Q10=True, gs_model=self.gs_model,
                        gamma=self.gamma, g0=self.g0,
                        g1=self.g1, D0=self.D0, alpha=self.alpha)
-        P = PenmanMonteith(self.leaf_width, self.leaf_absorptance)
+        P = PenmanMonteith(self.leaf_width, self.SW_abs)
 
         # set initialise values
         dleaf = vpd
@@ -398,7 +397,7 @@ if __name__ == '__main__':
     leaf_width = 0.02
 
     # hack to get around doing seperate sunlit/shaded leaves
-    leaf_absorptance = 0.8 # leaf absorptance of solar radiation [0,1]
+    SW_abs = 0.8 # leaf absorptance of solar radiation [0,1]
 
     # variables though obviously fixed here.
     par = 1500.0
@@ -409,6 +408,6 @@ if __name__ == '__main__':
     Ca = 400.0
 
     C = CoupledModel(g0, g1, D0, gamma, Vcmax25, Jmax25, Rd25, Eaj, Eav, deltaSj,
-                     deltaSv, Hdv, Hdj, Q10, leaf_width, leaf_absorptance,
+                     deltaSv, Hdv, Hdj, Q10, leaf_width, SW_abs,
                      gs_model="leuning")
     (An, gsw, et, le_et) = C.main(tair, par, vpd, wind, pressure, Ca)
