@@ -165,15 +165,13 @@ class PenmanMonteith(object):
         else:
             gbHf = 0.0
 
-        # total boundary layer conductance to heat for one side of the leaf
+        # total boundary layer conductance for heat
         gbH = gbHw + gbHf
 
-        # ... for hypostomatous leaves only gbH should be doubled and the
-        # single-sided value used for gbv
-        # total leaf conductance to heat (mol m-2 s-1), two sided see above.
+        # total boundary leaf conductance for heat (mol m-2 s-1) - two sided
         gh = 2.0 * (gbH + grn)
 
-        # total leaf conductance to water vapour (mol m-2 s-1)
+        # total leaf conductance for water vapour (mol m-2 s-1)
         gbw = gbH * c.GBH_2_GBW
         gsw = gsc * c.GSC_2_GSW
         gw = (gbw * gsw) / (gbw + gsw)
