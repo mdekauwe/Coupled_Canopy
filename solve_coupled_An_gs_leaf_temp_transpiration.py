@@ -51,7 +51,7 @@ class CoupledModel(object):
         self.emissivity_leaf = 0.99   # emissivity of leaf (-)
 
 
-    def main(self, tair, par, vpd, wind, pressure, Ca):
+    def main(self, tair, par, vpd, wind, pressure, Ca, rnet=None):
         """
         Parameters:
         ----------
@@ -113,7 +113,8 @@ class CoupledModel(object):
             # Calculate new Tleaf, dleaf, Cs
             (new_tleaf, et,
              le_et, gbH, gw) = self.calc_leaf_temp(P, Tleaf, tair, gsc,
-                                                   par, vpd, pressure, wind)
+                                                   par, vpd, pressure, wind,
+                                                   rnet=rnet)
 
 
             gbc = gbH * c.GBH_2_GBC
@@ -150,7 +151,7 @@ class CoupledModel(object):
 
         return (An, gsw, et, le_et)
 
-    def main_fast(self, tair, par, vpd, wind, pressure, Ca):
+    def main_fast(self, tair, par, vpd, wind, pressure, Ca, rnet=None):
         """
         Version as above but using a solver for Tleaf, rather than iterating
 
@@ -223,7 +224,8 @@ class CoupledModel(object):
         # back
         (et, le_et,
          gbH, gw) = self.calc_leaf_temp_solved(P, Tleaf, tair, gsc,
-                                               par, vpd, pressure, wind)
+                                               par, vpd, pressure, wind,
+                                               rnet=rnet)
 
         gbc = gbH * c.GBH_2_GBC
         Cs = Ca - An / gbc # boundary layer of leaf
@@ -244,7 +246,7 @@ class CoupledModel(object):
         return (new_tleaf - old_Tleaf)**2
 
     def calc_leaf_temp(self, P=None, tleaf=None, tair=None, gsc=None, par=None,
-                       vpd=None, pressure=None, wind=None):
+                       vpd=None, pressure=None, wind=None, rnet=None):
         """
         Resolve leaf temp
 
@@ -288,7 +290,8 @@ class CoupledModel(object):
         cmolar = pressure / (c.RGAS * tair_k)
 
         # W m-2 = J m-2 s-1
-        rnet = P.calc_rnet(par, tair, tair_k, tleaf_k, vpd, pressure)
+        if rnet is None:
+            rnet = P.calc_rnet(par, tair, tair_k, tleaf_k, vpd, pressure)
 
         (grn, gh, gbH, gw) = P.calc_conductances(tair_k, tleaf, tair,
                                                  wind, gsc, cmolar)
