@@ -67,7 +67,10 @@ if __name__ == '__main__':
     Hdv = 200000.0
     Hdj = 200000.0
     Q10 = 1.92
-
+    D0 = None
+    gamma = None
+    g0 = 0.0
+    g1 = 4.
     # Misc stuff
     leaf_width = 0.01
     SW_abs = 0.5 # absorptance to short_wave rad [0,1], typically 0.4-0.6
@@ -77,18 +80,9 @@ if __name__ == '__main__':
     wind = 2.5
     pressure = 101325.0
     vpd = 1.5
-    D0 = None
-    gamma = None
-    g0 = 0.0
-    g1 = 4.
-
-
     tair = 25
     Ca = np.linspace(0, 2000)
-    D0 = None
-    gamma = None
-    g0 = 0.0
-    g1 = 2.35
+
     CM = CoupledModel(g0, g1, D0, gamma, Vcmax25, Jmax25, Rd25,
                      Eaj, Eav,deltaSj, deltaSv, Hdv, Hdj, Q10, leaf_width,
                      SW_abs, gs_model="medlyn")
