@@ -252,7 +252,10 @@ class FarquharC3(object):
 
             # 1.6 (from corrigendum to Medlyn et al 2011) is missing here,
             # because we are calculating conductance to CO2!
-            gs_over_a = (1.0 + self.g1 / math.sqrt(vpd)) / Cs
+            if math.isclose(Cs, 0.0):
+                gs_over_a = 0.0
+            else:
+                gs_over_a = (1.0 + self.g1 / math.sqrt(vpd)) / Cs
             ci_over_ca = self.g1 / (self.g1 + math.sqrt(vpd))
 
         elif self.gs_model == "user_defined":
@@ -304,6 +307,10 @@ class FarquharC3(object):
         else:
             Ci = Cs
 
+        if math.isclose(Cs, 0.0):
+            An = 0.0 - Rd
+            gsc = 0.0
+            Ci = Cs
         return (An, gsc, Ci)
 
     def calc_RuBP_regeneration_rate(self, Par, Jmax):

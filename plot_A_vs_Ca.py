@@ -70,7 +70,7 @@ if __name__ == '__main__':
     D0 = None
     gamma = None
     g0 = 0.0
-    g1 = 4.
+    g1 = 2
     # Misc stuff
     leaf_width = 0.01
     SW_abs = 0.5 # absorptance to short_wave rad [0,1], typically 0.4-0.6
