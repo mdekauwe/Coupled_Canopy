@@ -24,9 +24,12 @@ from solve_coupled_An_gs_leaf_temp_transpiration import CoupledModel
 from utils import vpd_to_rh, get_dewpoint, calc_esat
 import constants as c
 
-def get_values(vpd, Ca, tair, par, pressure, C):
-    kpa_2_pa = 1000.
-    pa_2_kpa = 1.0 / kpa_2_pa
+def get_values(rh, Ca, tair, par, pressure, C):
+
+    esat = calc_esat(tair, pressure)
+    ea = rh / 100. * esat
+    vpd = (esat - ea) * c.PA_2_KPA
+    vpd = np.where(vpd < 0.05, 0.05, vpd)
 
     #print rh, vpd
     gs_store = []
@@ -39,15 +42,17 @@ def get_values(vpd, Ca, tair, par, pressure, C):
     an_conv = c.UMOL_TO_MOL * c.MOL_C_TO_GRAMS_C * c.SEC_TO_DAY
     for i,ta in enumerate(tair):
 
-        #Td = get_dewpoint(ta, rh)
-        #if Td > 0.0:
-        (An, gsw, et, LE, Cs, Ci) = C.main(ta, par, vpd, wind, pressure, Ca)
-        gs_store.append(gsw) # mol H20 m-2 s-1
-        et_store.append(et * et_conv) # mm d-1
-        An_store.append(An * an_conv) # g C m-2 d-1
-        Cs_store.append(Cs)
-        Ci_store.append(Ci)
-        tair_store.append(ta)
+        # We can't vary VPD independent of Tair ...
+        Td = get_dewpoint(ta, rh)
+        if Td > 0.0:
+            (An, gsw, et, LE,
+             Cs, Ci) = C.main(ta, par, vpd[i], wind, pressure, Ca)
+            gs_store.append(gsw) # mol H20 m-2 s-1
+            et_store.append(et * et_conv) # mm d-1
+            An_store.append(An * an_conv) # g C m-2 d-1
+            Cs_store.append(Cs)
+            Ci_store.append(Ci)
+            tair_store.append(ta)
 
     return gs_store, et_store, An_store, tair_store, Cs_store, Ci_store
 
@@ -118,7 +123,7 @@ if __name__ == '__main__':
     par = 1500.0
     wind = 2.5
     pressure = 101325.0
-    vpd = 2.
+    rh = 50.
     tair = np.linspace(0.1, 40)
     Ca1 = 400.
     Ca2 = 800.
@@ -135,10 +140,11 @@ if __name__ == '__main__':
 
     (gs_amb, et_amb,
      an_amb, tair_2plot,
-     Cs_amb, Ci_amb) = get_values(vpd, Ca1, tair, par, pressure, CM)
+     Cs_amb, Ci_amb) = get_values(rh, Ca1, tair, par, pressure, CM)
+    
     (gs_ele, et_ele,
      an_ele, tair_2plot,
-     Cs_ele, Ci_ele) = get_values(vpd, Ca2, tair, par, pressure, CM)
+     Cs_ele, Ci_ele) = get_values(rh, Ca2, tair, par, pressure, CM)
 
     ax1.plot(tair_2plot, an_amb, "b-")
     ax1.plot(tair_2plot, an_ele, "r-")
