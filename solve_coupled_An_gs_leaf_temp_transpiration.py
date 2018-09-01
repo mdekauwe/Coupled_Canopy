@@ -98,15 +98,15 @@ class CoupledModel(object):
 
         iter = 0
         while True:
-            (An, gsc) = F.calc_photosynthesis(Cs=Cs, Tleaf=Tleaf_K, Par=par,
-                                              Jmax25=self.Jmax25,
-                                              Vcmax25=self.Vcmax25,
-                                              Q10=self.Q10, Eaj=self.Eaj,
-                                              Eav=self.Eav,
-                                              deltaSj=self.deltaSj,
-                                              deltaSv=self.deltaSv,
-                                              Rd25=self.Rd25, Hdv=self.Hdv,
-                                              Hdj=self.Hdj, vpd=dleaf)
+            (An, gsc, Ci) = F.calc_photosynthesis(Cs=Cs, Tleaf=Tleaf_K, Par=par,
+                                                  Jmax25=self.Jmax25,
+                                                  Vcmax25=self.Vcmax25,
+                                                  Q10=self.Q10, Eaj=self.Eaj,
+                                                  Eav=self.Eav,
+                                                  deltaSj=self.deltaSj,
+                                                  deltaSv=self.deltaSv,
+                                                  Rd25=self.Rd25, Hdv=self.Hdv,
+                                                  Hdj=self.Hdj, vpd=dleaf)
 
 
 
@@ -149,7 +149,7 @@ class CoupledModel(object):
         #print(Tleaf)
         gsw = gsc * c.GSC_2_GSW
 
-        return (An, gsw, et, le_et)
+        return (An, gsw, et, le_et, Cs, Ci)
 
     def main_fast(self, tair, par, vpd, wind, pressure, Ca, rnet=None):
         """

@@ -57,7 +57,8 @@ class FarquharC3(object):
                  theta_J=0.7, force_vcmax_fit_pts=None,
                  alpha=None, quantum_yield=0.3, absorptance=0.8,
                  change_over_pt=None, model_Q10=False,
-                 gs_model=None, gamma=0.0, g0=None, g1=None, D0=1.5):
+                 gs_model=None, gamma=0.0, g0=None, g1=None, D0=1.5,
+                 adjust_Vcmax_Jmax_for_low_temp=False):
         """
         Parameters
         ----------
@@ -135,7 +136,7 @@ class FarquharC3(object):
         self.g0 = g0
         self.g1 = g1
         self.D0 = D0
-
+        self.adjust_Vcmax_Jmax_for_low_temp = adjust_Vcmax_Jmax_for_low_temp
 
     def calc_photosynthesis(self, Cs=None, Tleaf=None, Par=None,
                             Jmax=None, Vcmax=None, Jmax25=None, Vcmax25=None,
@@ -221,18 +222,15 @@ class FarquharC3(object):
 
         # actual rate of electron transport, a function of absorbed PAR
         if Par is not None:
-            J = self.quadratic(a=self.theta_J,
-                               b=-(self.alpha * Par + Jmax),
-                               c=self.alpha * Par * Jmax,
-                               large=False)
-
+            J = self.calc_RuBP_regeneration_rate(Par, Jmax)
         # all measurements are calculated under saturated light!!
         else:
             J = Jmax
         Vj = J / 4.0
 
-        #Jmax = self.adj_for_low_temp(Jmax, Tleaf)
-        #Vcmax = self.adj_for_low_temp(Vcmax, Tleaf)
+        if self.adjust_Vcmax_Jmax_for_low_temp:
+            Jmax = self.adj_for_low_temp(Jmax, Tleaf)
+            Vcmax = self.adj_for_low_temp(Vcmax, Tleaf)
 
         if self.gs_model == "leuning":
             g0 = self.g0 * c.GSW_2_GSC
@@ -244,8 +242,8 @@ class FarquharC3(object):
 
         elif self.gs_model == "medlyn":
             if math.isclose(self.g0, 0.0):
-                # I want a zero g0, but zero messes up the convergence, numerical
-                # fix
+                # I want a zero g0, but zero messes up the convergence,
+                # numerical fix
                 g0 = 1E-09
             else:
                 g0 = self.g0 * c.GSW_2_GSC
@@ -267,33 +265,16 @@ class FarquharC3(object):
             Cij = Cs
         else:
             # Solution when Rubisco activity is limiting
-            A = g0 + gs_over_a * (Vcmax - Rd)
-            B = ((1.0 - Cs * gs_over_a) * (Vcmax - Rd) + g0 * (Km - Cs) -
-                 gs_over_a * (Vcmax * gamma_star + Km * Rd))
-            C = (-(1.0 - Cs * gs_over_a) * (Vcmax * gamma_star + Km * Rd) -
-                  (g0 * Km * Cs))
-
-            # intercellular CO2 concentration
-            Cic = self.quadratic(a=A, b=B, c=C, large=True)
+            (Cic) = self.solve_ci(g0, gs_over_a, Rd, Cs, gamma_star, Vcmax, Km)
 
             # Solution when electron transport rate is limiting
-            A =  g0 + gs_over_a * (Vj - Rd)
-            B = ((1. - Cs * gs_over_a) * (Vj - Rd) +
-                 g0 * (2. * gamma_star - Cs) -
-                 gs_over_a * (Vj * gamma_star + 2. * gamma_star * Rd))
-            C = (-(1.0 - Cs * gs_over_a) * gamma_star * (Vj + 2.0 * Rd) -
-                   g0 * 2. * gamma_star * Cs)
+            (Cij) = self.solve_ci(g0, gs_over_a, Rd, Cs, gamma_star, Vj,
+                                  2.0*gamma_star)
 
-            # intercellular CO2 concentration
-            Cij = self.quadratic(a=A, b=B, c=C, large=True)
-
-        # This is in MAESTRA but I've commented it out to be consistent with
-        # plantecophys. I think this really should be in rather than out though!
-        #if Cic <= 0.0 or Cic > Cs:
-        #    Ac = 0.0
-        #else:
-        #    Ac = self.assim(Cic, gamma_star, a1=Vcmax, a2=Km)
-        Ac = self.assim(Cic, gamma_star, a1=Vcmax, a2=Km)
+        if Cic <= 0.0 or Cic > Cs:
+            Ac = 0.0
+        else:
+            Ac = self.assim(Cic, gamma_star, a1=Vcmax, a2=Km)
         Aj = self.assim(Cij, gamma_star, a1=Vj, a2=2.0*gamma_star)
 
         # When below light-compensation points, assume Ci=Ca.
@@ -323,7 +304,7 @@ class FarquharC3(object):
 
         # Hyperbolic minimum.
         Am = -self.quadratic(a=1.0 - 1E-04, b=Ac + Aj, c=Ac * Aj, large=True)
-
+        
         # Net photosynthesis
         An = Am - Rd
 
@@ -336,12 +317,53 @@ class FarquharC3(object):
 
         gsw = gsc * c.GSC_2_GSW
 
-        #if gsc > 0.0 and An > 0.0:
-        #    Ci = Cs - An / gsc
-        #else:
-        #    Ci = Cs
+        # calculate the real Ci
+        if gsc > 0.0 and An > 0.0:
+            Ci = Cs - An / gsc
+        else:
+            Ci = Cs
 
-        return (An, gsc)
+        return (An, gsc, Ci)
+
+    def calc_RuBP_regeneration_rate(self, Par, Jmax):
+        """
+        Solve actual electron transport rate *
+        """
+        A = self.theta_J
+        B = -(self.alpha * Par + Jmax);
+        C = self.alpha * Par * Jmax;
+        J = self.quadratic(a=A, b=B, c=C, large=False)
+
+        return J
+
+    def solve_ci(self, g0, gs_over_a, rd, Cs, gamma_star, gamma, beta):
+        """
+        Solve intercellular CO2 concentration using quadric equation, following
+        Leuning 1990, see eqn 15a-c, solving simultaneous solution for Eqs 2, 12
+        and 13
+
+        Reference:
+        ----------
+        Leuning (1990) Modelling Stomatal Behaviour and Photosynthesis of
+        Eucalyptus grandis. Aust. J. Plant Physiol., 17, 159-75.
+        """
+
+        A = g0 + gs_over_a * (gamma - rd)
+
+        arg1 = (1. - Cs * gs_over_a) * (gamma - rd)
+        arg2 = g0 * (beta - Cs)
+        arg3 = gs_over_a * (gamma * gamma_star + beta * rd)
+        B = arg1 + arg2 - arg3
+
+        arg1 = -(1.0 - Cs * gs_over_a)
+        arg2 = (gamma * gamma_star + beta * rd)
+        arg3 =  g0 * beta * Cs
+        C = arg1 * arg2 - arg3
+
+        Ci = self.quadratic(a=A, b=B, c=C, large=True)
+
+        return Ci
+
 
     def adj_for_low_temp(self, param, Tk, lower_bound=0.0, upper_bound=10.0):
         """

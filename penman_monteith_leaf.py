@@ -36,7 +36,7 @@ class PenmanMonteith(object):
         air_density = pressure  / (c.RSPECIFC_DRY_AIR * tair_k)
         cmolar = pressure  / (RGAS * tair_k)
         rnet = P.calc_rnet(par, tair, tair_k, tleaf_k, vpd, pressure)
-
+        
         (grn, gh, gbH, gw) = P.calc_conductances(tair_k, tleaf, tair,
                                                  wind, gsc, cmolar)
         (et, lambda_et) = P.calc_et(tleaf, tair, vpd, pressure, wind, par,
@@ -100,11 +100,8 @@ class PenmanMonteith(object):
         LE = arg1 / arg2
 
         # transpiration, mol H20 m-2 s-1
-        # multiply by 18 (grams)* 0.001 (grams to kg) * 86400.
-        # to get to kg m2 d-1 or mm d-1
         et = LE / lambda_et
 
-        # et units = mol H20 m-2 s-1,
         return (et, LE)
 
     def calc_conductances(self, tair_k, tleaf, tair, wind, gsc, cmolar):
