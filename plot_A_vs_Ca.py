@@ -42,7 +42,7 @@ def get_values2(vpd, Ca, tair, par, pressure, C):
         (An, gsw, et, LE, Cs, Ci) = C.main(tair, par, vpd, wind, pressure, cax)
         gs_store.append(gsw) # mol H20 m-2 s-1
         et_store.append(et * et_conv) # mm d-1
-        An_store.append(An * an_conv) # g C m-2 d-1
+        An_store.append(An) # umol m-2 s-1
         Cs_store.append(Cs)
         Ci_store.append(Ci)
 
@@ -135,4 +135,8 @@ if __name__ == '__main__':
     ax1.plot(Ci, an, "b-", label="Ci")
     ax1.legend(numpoints=1, loc="best")
     ax1.set_xlim(0, 1250)
-    plt.show()
+
+    ax1.set_ylabel("$A_{\mathrm{n}}$ ($\mathrm{\mu}$mol m$^{-2}$ s$^{-1}$)")
+    ax1.set_xlabel("CO$_2$ ($\mathrm{\mu}$mol mol$^{-1}$)")
+    fig.savefig("/Users/%s/Desktop/A_vs_CO2.pdf" % (os.getlogin()),
+                bbox_inches='tight', pad_inches=0.1)

@@ -168,6 +168,6 @@ if __name__ == '__main__':
     ax2.locator_params(nbins=6)
     ax3.locator_params(nbins=6)
 
-    fig.savefig("/Users/%s/Desktop/blah.pdf" % (os.getlogin()),
+    fig.savefig("/Users/%s/Desktop/A_gs_E_vs_Tair.pdf" % (os.getlogin()),
                 bbox_inches='tight', pad_inches=0.1)
     plt.show()
