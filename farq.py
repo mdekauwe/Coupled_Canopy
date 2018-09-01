@@ -319,9 +319,12 @@ class FarquharC3(object):
 
         Reference:
         ----------
-        Farquhar G.D. & Wong S.C. (1984) An empirical model of stomatal
-        conductance. Australian Journal of Plant Physiology 11, 191-210, eqn A
-        but probably clearer in Leuning 1995, eqn C3.
+        * Farquhar G.D. & Wong S.C. (1984) An empirical model of stomatal
+          conductance. Australian Journal of Plant Physiology 11, 191-210,
+          eqn A but probably clearer in:
+        * Leuning, R. et a., Leaf nitrogen, photosynthesis, conductance and
+          transpiration: scaling from leaves to canopies, Plant Cell Environ.,
+          18, 1183– 1200, 1995. Leuning 1995, eqn C3.
         """
         A = self.theta_J
         B = -(self.alpha * Par + Jmax);
@@ -339,8 +342,8 @@ class FarquharC3(object):
 
         Reference:
         ----------
-        Leuning (1990) Modelling Stomatal Behaviour and Photosynthesis of
-        Eucalyptus grandis. Aust. J. Plant Physiol., 17, 159-75.
+        * Leuning (1990) Modelling Stomatal Behaviour and Photosynthesis of
+          Eucalyptus grandis. Aust. J. Plant Physiol., 17, 159-75.
         """
 
         A = g0 + gs_over_a * (gamma - rd)
