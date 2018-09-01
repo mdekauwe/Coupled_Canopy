@@ -220,7 +220,7 @@ class FarquharC3(object):
             else:
                 Jmax = self.arrh(Jmax25, Eaj, Tleaf)
 
-        # actual rate of electron transport, a function of absorbed PAR
+        # Rate of electron transport, which is a function of absorbed PAR
         if Par is not None:
             J = self.calc_electron_transport_rate(Par, Jmax)
         # all measurements are calculated under saturated light!!
