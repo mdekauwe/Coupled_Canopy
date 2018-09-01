@@ -81,11 +81,11 @@ if __name__ == '__main__':
     D0 = None
     gamma = None
     g0 = 0.0
-    g1 = 2.35
+    g1 = 4.
 
 
     tair = 25
-    Ca = np.linspace(100, 2000, 2000)
+    Ca = np.linspace(0, 2000)
     D0 = None
     gamma = None
     g0 = 0.0
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     ax1.plot(Ca, an, "r-", label="Ca")
     ax1.plot(Cs, an, "g-", label="Cs")
-    #ax1.plot(Ci, an, "b-", label="Ci")
+    ax1.plot(Ci, an, "b-", label="Ci")
     ax1.legend(numpoints=1, loc="best")
     ax1.set_xlim(0, 1250)
     plt.show()

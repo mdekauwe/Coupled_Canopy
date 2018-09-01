@@ -282,31 +282,11 @@ class FarquharC3(object):
             Cij = Cs
             Aj = self.assim(Cij, gamma_star, a1=Vj, a2=2.0*gamma_star)
 
-        if Aj < Ac:
-            Ci = Cij
-        else:
-            Ci = Cic
-
-        """
-        # Limitation by triose-phosphate utilization
-        TPU = 1000.
-        alphag = 0.0
-        Ap = (3.0 * TPU * (Ci - gamma_star) /
-                (Ci - (1.0 + 3.0 * alphag) * gamma_star))
-        if Ci < 400:
-            Ap = 1000.
-
-        if Ap < Am:
-            print("TPUlim")
-
-        Am = -self.quadratic(a=1.0 - 1E-07, b=Am + Ap, c=Am * Ap, large=True)
-        """
-
         # Hyperbolic minimum.
-        Am = -self.quadratic(a=1.0 - 1E-04, b=Ac + Aj, c=Ac * Aj, large=True)
-        
+        A = -self.quadratic(a=1.0 - 1E-04, b=Ac + Aj, c=Ac * Aj, large=True)
+
         # Net photosynthesis
-        An = Am - Rd
+        An = A - Rd
 
         # Calculate conductance to CO2
         gsc = max(g0, g0 + gs_over_a * An)
@@ -315,6 +295,7 @@ class FarquharC3(object):
         if gsc < g0:
             gsc = g0
 
+        # Calculate conductance to water
         gsw = gsc * c.GSC_2_GSW
 
         # calculate the real Ci
