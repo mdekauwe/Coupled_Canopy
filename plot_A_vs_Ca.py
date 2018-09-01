@@ -78,8 +78,6 @@ if __name__ == '__main__':
     pressure = 101325.0
     vpd = 2.0
     tair = np.linspace(0.1, 40, 20)
-    Ca1 = 500.
-    Ca2 = 900.
     D0 = None
     gamma = None
     g0 = 0.0
