@@ -60,11 +60,11 @@ if __name__ == '__main__':
     plt.rcParams['text.usetex'] = False
     plt.rcParams['font.family'] = "sans-serif"
     plt.rcParams['font.sans-serif'] = "Helvetica"
-    plt.rcParams['axes.labelsize'] = 10
-    plt.rcParams['font.size'] = 10
-    plt.rcParams['legend.fontsize'] = 8
-    plt.rcParams['xtick.labelsize'] = 10
-    plt.rcParams['ytick.labelsize'] = 10
+    plt.rcParams['axes.labelsize'] = 14
+    plt.rcParams['font.size'] = 14
+    plt.rcParams['legend.fontsize'] = 14
+    plt.rcParams['xtick.labelsize'] = 14
+    plt.rcParams['ytick.labelsize'] = 14
 
     almost_black = '#262626'
     # change the tick colors also to the almost black
@@ -118,14 +118,14 @@ if __name__ == '__main__':
     par = 1500.0
     wind = 2.5
     pressure = 101325.0
-    vpd = 2.0
-    tair = np.linspace(0.1, 40, 20)
-    Ca1 = 500.
-    Ca2 = 900.
+    vpd = 2.
+    tair = np.linspace(0.1, 40)
+    Ca1 = 400.
+    Ca2 = 800.
     D0 = None
     gamma = None
     g0 = 0.0
-    g1 = 2.35
+    g1 = 3.
 
 
     CM = CoupledModel(g0, g1, D0, gamma, Vcmax25, Jmax25, Rd25,
@@ -164,9 +164,9 @@ if __name__ == '__main__':
     #ax9.set_ylim(0,0.18)
 
 
-    ax1.set_xlim(0,40)
-    ax2.set_xlim(0,40)
-    ax3.set_xlim(0,40)
+    ax1.set_xlim(-1,41)
+    ax2.set_xlim(-1,41)
+    ax3.set_xlim(-1,41)
 
 
     ax1.locator_params(nbins=6)

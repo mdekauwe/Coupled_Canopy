@@ -222,7 +222,7 @@ class FarquharC3(object):
 
         # actual rate of electron transport, a function of absorbed PAR
         if Par is not None:
-            J = self.calc_RuBP_regeneration_rate(Par, Jmax)
+            J = self.calc_electron_transport_rate(Par, Jmax)
         # all measurements are calculated under saturated light!!
         else:
             J = Jmax
@@ -313,13 +313,20 @@ class FarquharC3(object):
             Ci = Cs
         return (An, gsc, Ci)
 
-    def calc_RuBP_regeneration_rate(self, Par, Jmax):
+    def calc_electron_transport_rate(self, Par, Jmax):
         """
-        Solve actual electron transport rate *
+        Electron transport rate for a given absorbed irradiance
+
+        Reference:
+        ----------
+        Farquhar G.D. & Wong S.C. (1984) An empirical model of stomatal
+        conductance. Australian Journal of Plant Physiology 11, 191-210, eqn A
+        but probably clearer in Leuning 1995, eqn C3.
         """
         A = self.theta_J
         B = -(self.alpha * Par + Jmax);
         C = self.alpha * Par * Jmax;
+
         J = self.quadratic(a=A, b=B, c=C, large=False)
 
         return J

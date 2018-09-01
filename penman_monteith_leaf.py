@@ -224,8 +224,11 @@ class PenmanMonteith(object):
         # the canopy is 1
         net_lw_rad = (1.0 - emissivity_atm) * c.SIGMA * tair_k**4
 
+        # black leaves, table 1, Leuning 1995
+        #kd = 0.8
+
         # isothermal net radiation (W m-2)
-        rnet = self.SW_abs * sw_rad - net_lw_rad #* kd * exp(-kd * s->lai)
+        rnet = self.SW_abs * sw_rad - net_lw_rad #* kd * exp(-kd * lai)
 
         return rnet
 
