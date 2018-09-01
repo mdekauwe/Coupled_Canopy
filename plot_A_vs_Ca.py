@@ -56,8 +56,8 @@ if __name__ == '__main__':
     # Parameters
 
     # A stuff
-    JV_ratio = 1.67
-    Vcmax25 = 40.0          # ENF CABLE value
+    JV_ratio = 2.0
+    Vcmax25 = 50.0          # ENF CABLE value
     Jmax25 = Vcmax25 * JV_ratio
     Rd25 = 1.0
     Eaj = 30000.0
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     par = 1500.0
     wind = 2.5
     pressure = 101325.0
-    vpd = 2.0
+    vpd = 1.5
     tair = np.linspace(0.1, 40, 20)
     D0 = None
     gamma = None
