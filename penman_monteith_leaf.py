@@ -23,8 +23,8 @@ class PenmanMonteith(object):
 
     def __init__(self, leaf_width, SW_abs, angle=35.0):
 
-        self.emissivity_leaf = 0.98    # emissivity of leaf (-)
-        self.SW_abs = SW_abs            # absorptance to short-wave radiation
+        self.emissivity_leaf = 0.98     # emissivity of leaf (-)
+        self.SW_abs = SW_abs            # laea/can absorptance to SW radiation
         self.leaf_width = leaf_width    # (m)
         self.angle = angle              # angle from horizontal (deg) 0-90
 
@@ -36,7 +36,7 @@ class PenmanMonteith(object):
         air_density = pressure  / (c.RSPECIFC_DRY_AIR * tair_k)
         cmolar = pressure  / (RGAS * tair_k)
         rnet = P.calc_rnet(par, tair, tair_k, tleaf_k, vpd, pressure)
-        
+
         (grn, gh, gbH, gw) = P.calc_conductances(tair_k, tleaf, tair,
                                                  wind, gsc, cmolar)
         (et, lambda_et) = P.calc_et(tleaf, tair, vpd, pressure, wind, par,
@@ -489,7 +489,13 @@ if __name__ == '__main__':
     pressure = 101325.0 # Pa
     wind = 2.0
     leaf_width = 0.02
-    SW_abs = 0.5 # absorptance to short_wave rad [0,1], typically 0.4-0.6
+
+    # Cambell & Norman, 11.5, pg 178
+    # The solar absorptivities of leaves (-0.5) from Table 11.4 (Gates, 1980)
+    # with canopies (~0.8) from Table 11.2 reveals a surprising difference.
+    # The higher absorptivityof canopies arises because of multiple reflections
+    # among leaves in a canopy and depends on the architecture of the canopy.
+    SW_abs = 0.8 # use canopy absorptance of solar radiation
     DEG_TO_KELVIN = 273.15
     RGAS = 8.314
     angle = 35.0 # angle from horizontal

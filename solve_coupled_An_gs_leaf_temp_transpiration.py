@@ -401,8 +401,12 @@ if __name__ == '__main__':
     # Misc stuff
     leaf_width = 0.02
 
-    # hack to get around doing seperate sunlit/shaded leaves
-    SW_abs = 0.8 # leaf absorptance of solar radiation [0,1]
+    # Cambell & Norman, 11.5, pg 178
+    # The solar absorptivities of leaves (-0.5) from Table 11.4 (Gates, 1980)
+    # with canopies (~0.8) from Table 11.2 reveals a surprising difference.
+    # The higher absorptivityof canopies arises because of multiple reflections
+    # among leaves in a canopy and depends on the architecture of the canopy.
+    SW_abs = 0.8 # use canopy absorptance of solar radiation
 
     # variables though obviously fixed here.
     par = 1500.0
