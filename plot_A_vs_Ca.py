@@ -59,14 +59,14 @@ if __name__ == '__main__':
     JV_ratio = 2.0
     Vcmax25 = 50.0          # ENF CABLE value
     Jmax25 = Vcmax25 * JV_ratio
-    Rd25 = 1.0
+    Rd25 = 0.92
     Eaj = 30000.0
     Eav = 60000.0
     deltaSj = 650.0
     deltaSv = 650.0
     Hdv = 200000.0
     Hdj = 200000.0
-    Q10 = 2.0
+    Q10 = 1.92
 
     # Misc stuff
     leaf_width = 0.01
@@ -77,7 +77,6 @@ if __name__ == '__main__':
     wind = 2.5
     pressure = 101325.0
     vpd = 1.5
-    tair = np.linspace(0.1, 40, 20)
     D0 = None
     gamma = None
     g0 = 0.0
