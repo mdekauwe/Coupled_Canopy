@@ -89,7 +89,7 @@ class PenmanMonteith(object):
         slope = ((calc_esat(tair + 0.1, pressure) -
                   calc_esat(tair, pressure)) / 0.1)
 
-        # psychrometric constant
+        # psychrometric constant (Pa K-1)
         gamma = c.CP * c.AIR_MASS * pressure / lambda_et
 
         # Y cancels in eqn 10
