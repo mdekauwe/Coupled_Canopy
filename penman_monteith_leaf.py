@@ -153,7 +153,7 @@ class PenmanMonteith(object):
         grn = ((4.0 * c.SIGMA * tair_k**3 * self.emissivity_leaf) /
                (c.CP * c.AIR_MASS))
 
-        # boundary layer conductance for 1 side of leaf from forced convection
+        # boundary layer conductance for heat: single sided, forced convection
         # (mol m-2 s-1)
         gbHw = 0.003 * math.sqrt(wind / self.leaf_width) * cmolar
 
@@ -161,7 +161,7 @@ class PenmanMonteith(object):
             # grashof number
             grashof_num = 1.6E8 * math.fabs(tleaf - tair) * self.leaf_width**3
 
-            # boundary layer conductance for free convection
+            # boundary layer conductance for heat: single sided, free convection
             # (mol m-2 s-1)
             gbHf = 0.5 * c.DHEAT * grashof_num**0.25 / self.leaf_width * cmolar
         else:
