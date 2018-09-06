@@ -26,7 +26,7 @@ class PenmanMonteith(object):
     def __init__(self, leaf_width, SW_abs, angle=35.0):
 
         # emissivity of leaf (-); Table 3, Wang and Leuning, 1998
-        self.emissivity_leaf = 0.96
+        self.leaf_ems = 0.96
         self.SW_abs = SW_abs            # laea/can absorptance to SW radiation
         self.leaf_width = leaf_width    # (m)
         self.angle = angle              # angle from horizontal (deg) 0-90
@@ -71,9 +71,11 @@ class PenmanMonteith(object):
         par : float
             Photosynthetically active radiation (umol m-2 s-1)
         gh : float
-            boundary layer conductance to heat (mol m-2 s-1)
+            boundary layer conductance to heat - free & forced & radiative
+            components (mol m-2 s-1)
         gw :float
-            conductance to water vapour (mol m-2 s-1)
+            conductance to water vapour - stomatal & bdry layer components
+            (mol m-2 s-1)
         rnet : float
             Net radiation (J m-2 s-1 = W m-2)
 
@@ -150,8 +152,7 @@ class PenmanMonteith(object):
         # just below eqn 9. This differs from Leuning (1995) where it is
         # expressed as a function of the diffuse extinction coefficent and
         # cumulative LAI (NB. units already in mol m-2 s-1).
-        grn = ((4.0 * c.SIGMA * tair_k**3 * self.emissivity_leaf) /
-               (c.CP * c.AIR_MASS))
+        grn = (4.0 * c.SIGMA * tair_k**3 * self.leaf_ems) / (c.CP * c.AIR_MASS)
 
         # boundary layer conductance for heat: single sided, forced convection
         # (mol m-2 s-1)
