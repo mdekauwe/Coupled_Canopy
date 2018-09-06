@@ -150,7 +150,7 @@ class PenmanMonteith(object):
         # radiation conductance for big leaf from Wang and Leuning (1998)
         # just below eqn 9. This differs from Leuning (1995) where it is
         # expressed as a function of the diffuse extinction coefficent and
-        # cumulative LAI (mol m-2 s-1).
+        # cumulative LAI (NB. units already in mol m-2 s-1).
         grn = ((4.0 * c.SIGMA * tair_k**3 * self.emissivity_leaf) /
                (c.CP * c.AIR_MASS))
 
