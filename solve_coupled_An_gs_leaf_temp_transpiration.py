@@ -124,7 +124,7 @@ class CoupledModel(object):
             else:
                 Cs = Ca
 
-            if et == 0.0 or gw == 0.0:
+            if math.isclose(et, 0.0) or math.isclose(gw, 0.0):
                 dleaf = dair
             else:
                 dleaf = (et * pressure / gw) * c.PA_2_KPA # kPa
@@ -295,7 +295,7 @@ class CoupledModel(object):
 
         (grn, gh, gbH, gw) = P.calc_conductances(tair_k, tleaf, tair,
                                                  wind, gsc, cmolar)
-        if gsc == 0.0:
+        if math.isclose(gsc, 0.0):
             et = 0.0
             le_et = 0.0
         else:
@@ -366,7 +366,7 @@ class CoupledModel(object):
 
         (grn, gh, gbH, gw) = P.calc_conductances(tair_k, tleaf, tair,
                                                  wind, gsc, cmolar)
-        if gsc == 0.0:
+        if math.isclose(gsc, 0.0):
             et = 0.0
             le_et = 0.0
         else:

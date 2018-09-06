@@ -158,15 +158,15 @@ class PenmanMonteith(object):
         # (mol m-2 s-1)
         gbHw = 0.003 * math.sqrt(wind / self.leaf_width) * cmolar
 
-        if (tleaf - tair) != 0.0:
+        if math.isclose(tleaf - tair, 0.0):
+            gbHf = 0.0
+        else:
             # grashof number
             grashof_num = 1.6E8 * math.fabs(tleaf - tair) * self.leaf_width**3
 
             # boundary layer conductance for heat: single sided, free convection
             # (mol m-2 s-1)
             gbHf = 0.5 * c.DHEAT * grashof_num**0.25 / self.leaf_width * cmolar
-        else:
-            gbHf = 0.0
 
         # total boundary layer conductance for heat
         gbH = gbHw + gbHf
