@@ -129,9 +129,6 @@ class CoupledModel(object):
             else:
                 dleaf = (et * pressure / gw) * c.PA_2_KPA # kPa
 
-
-            #print "%f %f %f %f %f %f" %  (Cs, Tleaf, dleaf, An*12.*0.000001*86400., gs, et*18*0.001*86400.)
-
             # Check for convergence...?
             if math.fabs(Tleaf - new_tleaf) < 0.02:
                 break
@@ -231,7 +228,8 @@ class CoupledModel(object):
 
         gbc = gbH * c.GBH_2_GBC
         Cs = Ca - An / gbc # boundary layer of leaf
-        if et == 0.0 or gw == 0.0:
+
+        if math.isclose(et, 0.0) or math.isclose(gw, 0.0):
             dleaf = dair
         else:
             dleaf = (et * pressure / gw) * c.PA_2_KPA # kPa
