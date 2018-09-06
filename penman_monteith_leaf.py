@@ -89,8 +89,7 @@ class PenmanMonteith(object):
 
         # slope of sat. water vapour pressure (e_sat) to temperature curve
         # (Pa K-1), note kelvin conversion in func
-        slope = ((calc_esat(tair + 0.1, pressure) -
-                  calc_esat(tair, pressure)) / 0.1)
+        slope = (calc_esat(tair + 0.1) - calc_esat(tair)) / 0.1
 
         # psychrometric constant (Pa K-1)
         gamma = c.CP * c.AIR_MASS * pressure / lambda_et
@@ -220,7 +219,7 @@ class PenmanMonteith(object):
         #SW_abs = self.SW_abs * math.cos(math.radians(self.angle)) * SW_rad
 
         # atmospheric water vapour pressure (Pa)
-        ea = max(0.0, calc_esat(tair, pressure) - (vpd * c.KPA_2_PA))
+        ea = max(0.0, calc_esat(tair) - (vpd * c.KPA_2_PA))
 
         # apparent emissivity for a hemisphere radiating at air temperature
         # eqn D4

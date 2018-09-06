@@ -34,11 +34,11 @@ def vpd_to_rh(vpd, tair, pressure):
         relative humidity (fraction)
 
     """
-    rh = 1.0 - (vpd * c.KPA_2_PA) / calc_esat(tair, pressure)
+    rh = 1.0 - (vpd * c.KPA_2_PA) / calc_esat(tair)
 
     return max(0.0, min(1.0, rh))
 
-def calc_esat(tair, pressure):
+def calc_esat(tair):
     """
     Saturation vapour pressure or saturation partial pressure of water vapour
 
@@ -48,8 +48,6 @@ def calc_esat(tair, pressure):
     ----------
     tair : float
         air temperature (deg C)
-    pressure : float
-        air pressure (using constant) (Pa)
 
     Returns:
     --------
