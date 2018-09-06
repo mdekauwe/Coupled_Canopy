@@ -7,7 +7,9 @@ Reference:
 ==========
 * Leuning et al. (1995) Leaf nitrogen, photosynthesis, conductance and
   transpiration: scaling from leaves to canopies
-
+* Wang and Leuning (1998) A two-leaf model for canopy conductance,
+  photosynthesis and partitioning of available energy I: Model description and
+  comparison with a multi-layered model
 """
 __author__ = "Martin De Kauwe"
 __version__ = "1.0 (23.07.2015)"
@@ -23,7 +25,8 @@ class PenmanMonteith(object):
 
     def __init__(self, leaf_width, SW_abs, angle=35.0):
 
-        self.emissivity_leaf = 0.98     # emissivity of leaf (-)
+        # emissivity of leaf (-); Table 3, Wang and Leuning, 1998
+        self.emissivity_leaf = 0.96
         self.SW_abs = SW_abs            # laea/can absorptance to SW radiation
         self.leaf_width = leaf_width    # (m)
         self.angle = angle              # angle from horizontal (deg) 0-90
@@ -144,7 +147,10 @@ class PenmanMonteith(object):
         * Medlyn et al. 2007 appendix, for need for cmolar
         """
 
-        # radiation conductance (mol m-2 s-1)
+        # radiation conductance for big leaf from Wang and Leuning (1998)
+        # just below eqn 9. This differs from Leuning (1995) that expresses
+        # this as a function of the diffuse extinction coefficent and
+        # cumulative LAI (mol m-2 s-1)
         grn = ((4.0 * c.SIGMA * tair_k**3 * self.emissivity_leaf) /
                (c.CP * c.AIR_MASS)) * cmolar
 
