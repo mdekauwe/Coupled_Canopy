@@ -106,6 +106,10 @@ class PenmanMonteith(object):
         # transpiration, mol H20 m-2 s-1
         et = LE / lambda_et
 
+        if et < 0.0:
+            et = 0.0
+            le_et = 0.0
+
         return (et, LE)
 
     def calc_conductances(self, tair_k, tleaf, tair, wind, gsc, cmolar):

@@ -116,9 +116,7 @@ class CoupledModel(object):
                                                    par, vpd, pressure, wind,
                                                    rnet=rnet)
 
-
             gbc = gbH * c.GBH_2_GBC
-            #Cs = Ca - An / gbc # boundary layer of leaf
             if gbc > 0.0 and An > 0.0:
                 Cs = Ca - An / gbc # boundary layer of leaf
             else:
