@@ -33,9 +33,9 @@ class PenmanMonteith(object):
 
     def main(self, tleaf, tair, gs, vpd, pressure, wind, par):
 
-        tleaf_k = tleaf + DEG_TO_KELVIN
-        tair_k = tair + DEG_TO_KELVIN
-
+        tleaf_k = tleaf + c.DEG_TO_KELVIN
+        tair_k = tair + c.DEG_TO_KELVIN
+        
         air_density = pressure  / (c.RSPECIFC_DRY_AIR * tair_k)
         cmolar = pressure  / (RGAS * tair_k)
         rnet = P.calc_rnet(par, tair, tair_k, tleaf_k, vpd, pressure)
@@ -504,7 +504,6 @@ if __name__ == '__main__':
     # The higher absorptivityof canopies arises because of multiple reflections
     # among leaves in a canopy and depends on the architecture of the canopy.
     SW_abs = 0.8 # use canopy absorptance of solar radiation
-    DEG_TO_KELVIN = 273.15
     RGAS = 8.314
     angle = 35.0 # angle from horizontal
 
