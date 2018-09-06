@@ -33,9 +33,9 @@ class PenmanMonteith(object):
 
     def main(self, tleaf, tair, gs, vpd, pressure, wind, par):
 
-        tleaf_k = tleaf + c.DEG_TO_KELVIN
-        tair_k = tair + c.DEG_TO_KELVIN
-        
+        tleaf_k = tleaf + c.DEG_2_KELVIN
+        tair_k = tair + c.DEG_2_KELVIN
+
         air_density = pressure  / (c.RSPECIFC_DRY_AIR * tair_k)
         cmolar = pressure  / (RGAS * tair_k)
         rnet = P.calc_rnet(par, tair, tair_k, tleaf_k, vpd, pressure)
