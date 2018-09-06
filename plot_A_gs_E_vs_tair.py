@@ -26,7 +26,7 @@ import constants as c
 
 def get_values(rh, Ca, tair, par, pressure, C):
 
-    esat = calc_esat(tair, pressure)
+    esat = calc_esat(tair)
     ea = rh / 100. * esat
     vpd = (esat - ea) * c.PA_2_KPA
     vpd = np.where(vpd < 0.05, 0.05, vpd)
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     (gs_amb, et_amb,
      an_amb, tair_2plot,
      Cs_amb, Ci_amb) = get_values(rh, Ca1, tair, par, pressure, CM)
-    
+
     (gs_ele, et_ele,
      an_ele, tair_2plot,
      Cs_ele, Ci_ele) = get_values(rh, Ca2, tair, par, pressure, CM)
@@ -171,6 +171,7 @@ if __name__ == '__main__':
 
 
     ax1.set_xlim(-1,41)
+    ax1.set_ylim(-1, 15)
     ax2.set_xlim(-1,41)
     ax3.set_xlim(-1,41)
 
