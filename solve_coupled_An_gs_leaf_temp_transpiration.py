@@ -139,15 +139,17 @@ class CoupledModel(object):
             if iter > self.iter_max:
                 raise Exception('No convergence: %d' % (iter))
 
-
             # Update temperature & do another iteration
             Tleaf = new_tleaf
 
             Tleaf_K = Tleaf + c.DEG_2_KELVIN
 
             iter += 1
-        #print(Tleaf)
+
         gsw = gsc * c.GSC_2_GSW
+
+        if et < 0.0:
+            raise Exception("ET shouldn't be negative, issue in energy balance")
 
         return (An, gsw, et, le_et, Cs, Ci)
 
