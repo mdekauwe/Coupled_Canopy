@@ -62,12 +62,58 @@ CM = CoupledModel(g0, g1, D0, gamma, Vcmax25, Jmax25, Rd25,
                  Eaj, Eav,deltaSj, deltaSv, Hdv, Hdj, Q10, leaf_width,
                  SW_abs, gs_model="medlyn")
 
+"""
 gs_store = []
 et_store = []
 An_store = []
 et_conv = c.MOL_WATER_2_G_WATER * c.G_TO_KG * c.SEC_TO_DAY
 an_conv = c.UMOL_TO_MOL * c.MOL_C_TO_GRAMS_C * c.SEC_TO_DAY
 
+Anx = 0.0
+etx = 0.0
+count = 0
+for i in range(len(df)):
+
+
+    (An, gsw, et, LE,
+     Cs, Ci) = CM.main(df.TAir[i], df.PAR[i], df.VPD[i], df["u"][i], pressure, 400.)
+
+
+    Anx = An #* c.UMOL_TO_MOL * c.MOL_C_TO_GRAMS_C * 1800.
+    etx = et #* c.MOL_WATER_2_G_WATER * c.G_TO_KG * 1800.
+
+
+    An_store.append(Anx) # g C m-2 d-1
+    et_store.append(etx ) # mm d-1
+
+
+    count += 1
+
+fig = plt.figure(figsize=(14,5))
+fig.subplots_adjust(hspace=0.1)
+fig.subplots_adjust(wspace=0.1)
+plt.rcParams['text.usetex'] = False
+plt.rcParams['font.family'] = "sans-serif"
+plt.rcParams['font.sans-serif'] = "Helvetica"
+plt.rcParams['axes.labelsize'] = 10
+plt.rcParams['font.size'] = 10
+plt.rcParams['legend.fontsize'] = 8
+plt.rcParams['xtick.labelsize'] = 10
+plt.rcParams['ytick.labelsize'] = 10
+
+ax1 = fig.add_subplot(121)
+ax2 = fig.add_subplot(122)
+ax1.plot(An_store[:47*4])
+ax2.plot(et_store[:47*4])
+plt.show()
+sys.exit()
+"""
+
+gs_store = []
+et_store = []
+An_store = []
+et_conv = c.MOL_WATER_2_G_WATER * c.G_TO_KG * c.SEC_TO_DAY
+an_conv = c.UMOL_TO_MOL * c.MOL_C_TO_GRAMS_C * c.SEC_TO_DAY
 Anx = 0.0
 etx = 0.0
 count = 0
