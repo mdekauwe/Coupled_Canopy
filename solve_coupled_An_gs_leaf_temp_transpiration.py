@@ -139,7 +139,7 @@ class CoupledModel(object):
             iter += 1
 
         gsw = gsc * c.GSC_2_GSW
-
+        
         if et < 0.0:
             raise Exception("ET shouldn't be negative, issue in energy balance")
 

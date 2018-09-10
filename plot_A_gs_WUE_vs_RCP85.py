@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
 
 
-    df = pd.read_csv("/Users/mdekauwe/Desktop/RCP8.5_co2.csv")
+    df = pd.read_csv("RCP8.5_co2.csv")
 
     # Parameters
 
@@ -120,8 +120,68 @@ if __name__ == '__main__':
 
     (gs, an) = get_values(vpd, Ca, tair, par, pressure, CM)
 
+    #
+    ## Plot whole thing
+    #
+    fig = plt.figure(figsize=(17,4))
+    fig.subplots_adjust(hspace=0.1)
+    fig.subplots_adjust(wspace=0.3)
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.family'] = "sans-serif"
+    plt.rcParams['font.sans-serif'] = "Helvetica"
+    plt.rcParams['axes.labelsize'] = 14
+    plt.rcParams['font.size'] = 14
+    plt.rcParams['legend.fontsize'] = 14
+    plt.rcParams['xtick.labelsize'] = 14
+    plt.rcParams['ytick.labelsize'] = 14
 
+    almost_black = '#262626'
+    # change the tick colors also to the almost black
+    plt.rcParams['ytick.color'] = almost_black
+    plt.rcParams['xtick.color'] = almost_black
 
+    # change the text colors also to the almost black
+    plt.rcParams['text.color'] = almost_black
+
+    # Change the default axis colors from black to a slightly lighter black,
+    # and a little thinner (0.5 instead of 1)
+    plt.rcParams['axes.edgecolor'] = almost_black
+    plt.rcParams['axes.labelcolor'] = almost_black
+
+    #colour_list = brewer2mpl.get_map('Accent', 'qualitative', 8).mpl_colors
+    # CB palette  with grey:
+    # from http://jfly.iam.u-tokyo.ac.jp/color/image/pallete.jpg
+    colour_list = ["#CC79A7", "#E69F00", "#0072B2", "#009E73", "#F0E442",
+                "#56B4E9", "#D55E00", "#000000"]
+
+    ax1 = fig.add_subplot(131)
+    ax2 = fig.add_subplot(132)
+    ax3 = fig.add_subplot(133)
+
+    ax1.fill_between(df.year, an_low_jv/an_low_jv[0],
+                     an_high_jv/an_high_jv[0], color="lightblue",
+                     label="Uncertainty due to JV ratio")
+    ax1.legend(numpoints=1, loc="upper left", fontsize=10)
+    ax2.fill_between(df.year, gs_low_jv/gs_low_jv[0],
+                     gs_high_jv/gs_high_jv[0], color="lightblue")
+
+    ax1.plot(df.year, an/an[0], "b-")
+    ax2.plot(df.year, gs/gs[0], "b-")
+    ax3.plot(df.year, (an / gs) / (an[0] / gs[0]), "g-", lw=3, label="WUE")
+    ax3.plot(df.year, Ca / Ca[0], "b--", label="CO$_2$")
+    ax3.legend(numpoints=1, loc="best")
+
+    ax1.set_ylabel("$A_{\mathrm{n}}$ response to CO$_2$")
+    ax2.set_ylabel("$g_{\mathrm{s}}$ response to CO$_2$")
+    ax3.set_ylabel("Response to CO$_2$")
+    ax2.set_xlabel("Year")
+
+    fig.savefig("/Users/%s/Desktop/A_gs_wue_vs_RCP85_CO2.pdf" % (os.getlogin()),
+                bbox_inches='tight', pad_inches=0.1)
+
+    #
+    ## Plot 1990-2015
+    #
     fig = plt.figure(figsize=(17,4))
     fig.subplots_adjust(hspace=0.1)
     fig.subplots_adjust(wspace=0.3)
@@ -158,12 +218,6 @@ if __name__ == '__main__':
     ax3 = fig.add_subplot(133)
 
 
-    ax1.fill_between(df.year, an_low_jv/an_low_jv[0], an_high_jv/an_high_jv[0],
-                     color="lightblue", label="Uncertainty due to JV ratio")
-    ax1.legend(numpoints=1, loc="upper left", fontsize=10)
-    ax2.fill_between(df.year, gs_low_jv/gs_low_jv[0], gs_high_jv/gs_high_jv[0],
-                     color="lightblue")
-
     ax1.plot(df.year, an/an[0], "b-")
     ax2.plot(df.year, gs/gs[0], "b-")
     ax3.plot(df.year, (an / gs) / (an[0] / gs[0]), "g-", lw=3, label="WUE")
@@ -175,12 +229,74 @@ if __name__ == '__main__':
     ax3.set_ylabel("Response to CO$_2$")
     ax2.set_xlabel("Year")
 
-    #ax1.set_xlim(1900, 2015)
-    #ax2.set_xlim(1900, 2015)
-    #ax3.set_xlim(1900, 2015)
+    ax1.set_xlim(1900, 2015)
+    ax2.set_xlim(1900, 2015)
+    ax3.set_xlim(1900, 2015)
+    ax1.set_ylim(1.0, 1.5)
+    ax2.set_ylim(1.0, 1.1)
+    ax3.set_ylim(1.0, 1.35)
+
+    fig.savefig("/Users/%s/Desktop/A_gs_wue_1990_2015.pdf" % (os.getlogin()),
+                bbox_inches='tight', pad_inches=0.1)
+
+    #
+    ## Plot future
+    #
+    fig = plt.figure(figsize=(17,4))
+    fig.subplots_adjust(hspace=0.1)
+    fig.subplots_adjust(wspace=0.3)
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.family'] = "sans-serif"
+    plt.rcParams['font.sans-serif'] = "Helvetica"
+    plt.rcParams['axes.labelsize'] = 14
+    plt.rcParams['font.size'] = 14
+    plt.rcParams['legend.fontsize'] = 14
+    plt.rcParams['xtick.labelsize'] = 14
+    plt.rcParams['ytick.labelsize'] = 14
+
+    almost_black = '#262626'
+    # change the tick colors also to the almost black
+    plt.rcParams['ytick.color'] = almost_black
+    plt.rcParams['xtick.color'] = almost_black
+
+    # change the text colors also to the almost black
+    plt.rcParams['text.color'] = almost_black
+
+    # Change the default axis colors from black to a slightly lighter black,
+    # and a little thinner (0.5 instead of 1)
+    plt.rcParams['axes.edgecolor'] = almost_black
+    plt.rcParams['axes.labelcolor'] = almost_black
+
+    #colour_list = brewer2mpl.get_map('Accent', 'qualitative', 8).mpl_colors
+    # CB palette  with grey:
+    # from http://jfly.iam.u-tokyo.ac.jp/color/image/pallete.jpg
+    colour_list = ["#CC79A7", "#E69F00", "#0072B2", "#009E73", "#F0E442",
+                "#56B4E9", "#D55E00", "#000000"]
+
+    ax1 = fig.add_subplot(131)
+    ax2 = fig.add_subplot(132)
+    ax3 = fig.add_subplot(133)
+
+    idx = np.argwhere(df.year == 2015)[0][0]
+
+    ax1.plot(df.year[idx:], an[idx:]/an[idx], "b-")
+    ax2.plot(df.year[idx:], gs[idx:]/gs[idx], "b-")
+    ax3.plot(df.year[idx:], (an[idx:] / gs[idx:]) / (an[idx] / gs[idx]),
+             "g-", lw=3, label="WUE")
+    ax3.plot(df.year[idx:], Ca[idx:] / Ca[idx], "b--", label="CO$_2$")
+    ax3.legend(numpoints=1, loc="best")
+
+    ax1.set_ylabel("$A_{\mathrm{n}}$ response to CO$_2$")
+    ax2.set_ylabel("$g_{\mathrm{s}}$ response to CO$_2$")
+    ax3.set_ylabel("Response to CO$_2$")
+    ax2.set_xlabel("Year")
+
+    #ax1.set_xlim(2015, 2100)
+    #ax2.set_xlim(2015, 2100)
+    #ax3.set_xlim(2015, 2100)
     #ax1.set_ylim(1.0, 1.5)
     #ax2.set_ylim(1.0, 1.1)
     #ax3.set_ylim(1.0, 1.35)
 
-    fig.savefig("/Users/%s/Desktop/A_gs_wue_vs_RCP85_CO2.pdf" % (os.getlogin()),
+    fig.savefig("/Users/%s/Desktop/A_gs_wue_just_future.pdf" % (os.getlogin()),
                 bbox_inches='tight', pad_inches=0.1)
