@@ -87,7 +87,7 @@ if __name__ == '__main__':
     pressure = 101325.0
     vpd = 1.5
     tair = 25
-    Ca = np.linspace(0, 2000)
+    Ca = np.linspace(350, 2000)
 
     CM = CoupledModel(g0, g1, D0, gamma, Vcmax25, Jmax25, Rd25,
                      Eaj, Eav,deltaSj, deltaSv, Hdv, Hdj, Q10, leaf_width,
@@ -96,6 +96,11 @@ if __name__ == '__main__':
 
     (gs, et,
      an, Cs, Ci) = get_values2(vpd, Ca, tair, par, pressure, CM)
+
+    from apsim_co2_response import apsim_co2_response
+
+    co2_mod = apsim_co2_response(tair, Ca)
+    apsim_an = an * co2_mod
 
     fig = plt.figure(figsize=(9,6))
     fig.subplots_adjust(hspace=0.1)
@@ -133,6 +138,7 @@ if __name__ == '__main__':
     ax1.plot(Ca, an, "r-", label="Ca")
     ax1.plot(Cs, an, "g-", label="Cs")
     ax1.plot(Ci, an, "b-", label="Ci")
+    ax1.plot(Ca, apsim_an, "k-", label="Apsim")
     ax1.legend(numpoints=1, loc="best")
     ax1.set_xlim(0, 1250)
 
