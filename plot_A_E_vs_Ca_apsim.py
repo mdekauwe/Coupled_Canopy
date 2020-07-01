@@ -87,7 +87,7 @@ if __name__ == '__main__':
     pressure = 101325.0
     vpd = 1.5
     tair = 25
-    Ca = np.linspace(350, 2000)
+    Ca = np.linspace(350, 700)
 
     CM = CoupledModel(g0, g1, D0, gamma, Vcmax25, Jmax25, Rd25,
                      Eaj, Eav,deltaSj, deltaSv, Hdv, Hdj, Q10, leaf_width,
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     co2_mod = apsim_co2_response(tair, Ca)
     apsim_an = an * co2_mod
 
-    fig = plt.figure(figsize=(9,6))
+    fig = plt.figure(figsize=(15,5))
     fig.subplots_adjust(hspace=0.1)
     fig.subplots_adjust(wspace=0.3)
     plt.rcParams['text.usetex'] = False
@@ -133,16 +133,22 @@ if __name__ == '__main__':
     colour_list = ["#CC79A7", "#E69F00", "#0072B2", "#009E73", "#F0E442",
                 "#56B4E9", "#D55E00", "#000000"]
 
-    ax1 = fig.add_subplot(111)
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
 
     ax1.plot(Ca, an, "r-", label="Ca")
     ax1.plot(Cs, an, "g-", label="Cs")
     ax1.plot(Ci, an, "b-", label="Ci")
     ax1.plot(Ca, apsim_an, "k-", label="Apsim")
     ax1.legend(numpoints=1, loc="best")
-    ax1.set_xlim(0, 1250)
+    ax1.set_xlim(0, 700)
+
+    ax2.plot(Ca, et, "r-", label="STD")
+    ax2.plot(Ca[-1], et[0]* (1.0 - 0.37), "ro", label="Apsim")
 
     ax1.set_ylabel("$A_{\mathrm{n}}$ ($\mathrm{\mu}$mol m$^{-2}$ s$^{-1}$)")
-    ax1.set_xlabel("CO$_2$ ($\mathrm{\mu}$mol mol$^{-1}$)")
-    fig.savefig("/Users/%s/Desktop/A_vs_CO2.pdf" % (os.getlogin()),
+    ax2.set_ylabel("$E$ (mm d$^{-1}$)")
+    ax1.set_xlabel("CO$_2$ ($\mathrm{\mu}$mol mol$^{-1}$)", position=(1.1, 0.5))
+
+    fig.savefig("/Users/%s/Desktop/A_E_vs_CO2_apsim.pdf" % (os.getlogin()),
                 bbox_inches='tight', pad_inches=0.1)
