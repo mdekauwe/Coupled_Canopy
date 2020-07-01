@@ -31,7 +31,7 @@ class PenmanMonteith(object):
         self.leaf_width = leaf_width    # (m)
         self.angle = angle              # angle from horizontal (deg) 0-90
 
-    def main(self, tleaf, tair, gs, vpd, pressure, wind, par):
+    def main(self, tleaf, tair, gsc, vpd, pressure, wind, par):
 
         tleaf_k = tleaf + c.DEG_2_KELVIN
         tair_k = tair + c.DEG_2_KELVIN
