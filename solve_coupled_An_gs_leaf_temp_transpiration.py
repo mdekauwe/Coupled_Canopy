@@ -87,7 +87,7 @@ class CoupledModel(object):
 
         # set initialise values
         dleaf = vpd
-        dair = vpd
+        dair = tair
         Cs = Ca
         Tleaf = tair
         Tleaf_K = Tleaf + c.DEG_2_KELVIN
@@ -139,7 +139,7 @@ class CoupledModel(object):
             iter += 1
 
         gsw = gsc * c.GSC_2_GSW
-        
+
         if et < 0.0:
             raise Exception("ET shouldn't be negative, issue in energy balance")
 
@@ -183,7 +183,7 @@ class CoupledModel(object):
 
         # set initialise values
         dleaf = vpd
-        dair = vpd
+        dair = tair
         Cs = Ca
         Tleaf = tair
         Tleaf_K = Tleaf + c.DEG_2_KELVIN
