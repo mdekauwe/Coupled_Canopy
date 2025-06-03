@@ -14,25 +14,11 @@ import sys
 import numpy as np
 import os
 import math
-import constants as c
+from coupled_canopy.utils import constants as c
 
 class FarquharC3(object):
     """
-    Rate of photosynthesis in a leaf depends on the the rates of
-    carboxylation (Ac) and the regeneration of ribulose-1,5-bisphosphate (RuBP)
-    catalysed by the enzyme RUBISCO (Aj). This class returns the net leaf
-    photosynthesis (An) which is the minimum of this two limiting processes
-    less the rate of mitochondrial respiration in the light (Rd). We are
-    ignoring the the "export" limitation (Ap) which could occur under high
-    levels of irradiance.
-
-    Model assumes conductance between intercellular space and the site of
-    carboxylation is zero. The models parameters Vcmax, Jmax, Rd along with
-    the calculated values for Kc, Ko and gamma star all vary with temperature.
-    The parameters Jmax and Vcmax are typically fitted with a temperature
-    dependancy function, either an exponential Arrheniuous or a peaked
-    function, i.e. the Arrhenious function with a switch off point.
-
+    C3 photosynthesis model based on Farquhar et al. (1980)
 
     All calculations in Kelvins...
 
@@ -196,29 +182,14 @@ class FarquharC3(object):
         """
         self.check_supplied_args(Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25)
 
-        # calculate temp dependancies of MichaelisMenten constants for CO2, O2
-        Km = self.calc_michaelis_menten_constants(Tleaf)
+        # Calculate temperature-dependent parameters
+        (Km, gamma_star,
+        Vcmax, Jmax,
+        Rd) = self.calc_temperature_dependent_params(Tleaf,Q10, Rd25, Ear,
+                                                     Vcmax25, Eav, deltaSv, Hdv,
+                                                     Jmax25, Eaj, deltaSj, Hdj)
 
-        # Effect of temp on CO2 compensation point
-        gamma_star = self.arrh(self.gamstar25, self.Eag, Tleaf)
-
-        # Calculations at 25 degrees C or the measurement temperature
-        if Rd25 is not None:
-            Rd = self.calc_resp(Tleaf, Q10, Rd25, Ear)
-
-        # Calculate temperature dependancies on Vcmax and Jmax
-        if Vcmax25 is not None:
-            # Effect of temperature on Vcmax and Jamx
-            if self.peaked_Vcmax:
-                Vcmax = self.peaked_arrh(Vcmax25, Eav, Tleaf, deltaSv, Hdv)
-            else:
-                Vcmax = self.arrh(Vcmax25, Eav, Tleaf)
-
-        if Jmax25 is not None:
-            if self.peaked_Jmax:
-                Jmax = self.peaked_arrh(Jmax25, Eaj, Tleaf, deltaSj, Hdj)
-            else:
-                Jmax = self.arrh(Jmax25, Eaj, Tleaf)
+        (gs_over_a, g0) = self.calc_stomatal_ratio(Cs, vpd, mult)
 
         # Rate of electron transport, which is a function of absorbed PAR
         if Par is not None:
@@ -228,40 +199,6 @@ class FarquharC3(object):
             J = Jmax
         Vj = J / 4.0
 
-        if self.adjust_Vcmax_Jmax_for_low_temp:
-            Jmax = self.adj_for_low_temp(Jmax, Tleaf)
-            Vcmax = self.adj_for_low_temp(Vcmax, Tleaf)
-
-        if self.gs_model == "leuning":
-            g0 = self.g0 * c.GSW_2_GSC
-            gs_over_a = self.g1 / (Cs - self.gamma) / (1.0 + vpd / self.D0)
-
-            # conductance to CO2
-            gs_over_a *= c.GSW_2_GSC
-            ci_over_ca = 1.0 - 1.6 * (1.0 + vpd / self.D0) / self.g1
-
-        elif self.gs_model == "medlyn":
-            if math.isclose(self.g0, 0.0):
-                # I want a zero g0, but zero messes up the convergence,
-                # numerical fix
-                g0 = 1E-09
-            else:
-                g0 = self.g0 * c.GSW_2_GSC
-            if vpd < 0.05:
-                vpd = 0.05
-
-            # 1.6 (from corrigendum to Medlyn et al 2011) is missing here,
-            # because we are calculating conductance to CO2!
-            if math.isclose(Cs, 0.0):
-                gs_over_a = 0.0
-            else:
-                gs_over_a = (1.0 + self.g1 / math.sqrt(vpd)) / Cs
-            ci_over_ca = self.g1 / (self.g1 + math.sqrt(vpd))
-
-        elif self.gs_model == "user_defined":
-            # Multiplier is user-defined.
-            g0 = self.g0 / c.GSC_2_GSW
-            gs_over_a = mult / c.GSC_2_GSW
 
         if ( math.isclose(Par, 0.0) | math.isclose(Vj, 0.0) ):
             Cic = Cs
@@ -311,7 +248,193 @@ class FarquharC3(object):
             An = 0.0 - Rd
             gsc = 0.0
             Ci = Cs
+
         return (An, gsc, Ci)
+
+    def calc_stomatal_ratio(self, Cs, vpd, mult):
+        """
+        Calculate stomatal ratio: gs/A based on specified model.
+
+        Parameters:
+        --------
+        Cs: : float
+            CO2 concentration at leaf surface (µmol mol-1)
+        VPD: float:
+            vapor pressure deficit (kPa)
+
+        Returns:
+        --------
+        gs_over_a: float
+            Ratio of gs to A (mol m-2 s-2 per µmol m-2 s-1)
+        g0: float
+            Residual conductance to CO₂ (mol m-2 s-1)
+        """
+        # Apply numerical fix for g0
+        g0 = self.g0 * c.GSW_2_GSC if not math.isclose(self.g0, 0.0) else 1E-09
+
+        if self.gs_model == 'medlyn':
+
+            # Prevent division by very low VPD
+            vpd = max(vpd, 0.05)
+
+            # 1.6 (from corrigendum to Medlyn et al 2011) is missing here,
+            # because we are calculating conductance to CO2!
+            if math.isclose(Cs, 0.0):
+                gs_over_a = 0.0
+            else:
+                gs_over_a = (1.0 + self.g1 / math.sqrt(vpd)) / Cs
+            ci_over_ca = self.g1 / (self.g1 + math.sqrt(vpd))
+
+        elif self.gs_model == "leuning":
+
+            gs_over_a = self.g1 / (Cs - self.gamma) / (1.0 + vpd / self.D0)
+
+            # conductance to CO2
+            gs_over_a *= c.GSW_2_GSC
+            ci_over_ca = 1.0 - 1.6 * (1.0 + vpd / self.D0) / self.g1
+
+        #elif self.gs_model == "ball_berry":
+        #
+        #    if RH is None:
+        #        raise ValueError("Ball-Berry model requires relative_humidity (0–1).")
+        #    gs_over_a = (self.g1 * RH) / Cs
+        #    gs_over_a *= c.GSW_2_GSC
+        #
+        #elif self.gs_model == "tuzet":
+        #    if RH is None:
+        #        raise ValueError("Tuzet model requires relative_humidity (0–1).")
+        #
+        #    f = RH / (RH + math.exp(self.a * (self.RH0 - RH)))
+        #    gs_over_a = (self.g1 * f) / Cs
+        #    gs_over_a *= c.GSW_2_GSC
+
+
+        elif self.gs_model == "user_defined":
+
+            # Multiplier is user-defined.
+            g0 = self.g0 / c.GSC_2_GSW
+            gs_over_a = mult / c.GSC_2_GSW
+
+        else:
+            # Custom or unknown model
+            raise NotImplementedError(
+             f"Stomatal conductance model '{self.gs_model}' not implemented.")
+
+        return gs_over_a, g0
+
+    def calc_temperature_dependent_params(self, Tleaf, Q10, Rd25, Ear, Vcmax25,
+                                          Eav, deltaSv, Hdv, Jmax25, Eaj,
+                                          deltaSj, Hdj):
+        """
+        Calculate temperature-dependent photosynthetic parameters:
+        """
+
+        # Calculate Michaelis-Menten constant for O2/CO2
+        Kc = self._arrhenius(self.Kc25, self.Ec, Tleaf)
+        Ko = self._arrhenius(self.Ko25, self.Eo, Tleaf)
+        Km = Kc * (1.0 + self.Oi / Ko)
+
+        # Effect of temp on CO2 compensation point
+        gamma_star = self._arrhenius(self.gamstar25, self.Eag, Tleaf)
+
+        # Calculations at 25 degrees C or the measurement temperature
+        if Rd25 is not None:
+            Rd = self.calc_resp(Tleaf, Q10, Rd25, Ear)
+
+        # Calculate Vcmax and Jmax temperature responses
+        if Vcmax25 is not None:
+            # Effect of temperature on Vcmax and Jamx
+            if self.peaked_Vcmax:
+                Vcmax = self._peaked_arrhenius(Vcmax25, Eav, Tleaf, deltaSv, Hdv)
+            else:
+                Vcmax = self._arrhenius(Vcmax25, Eav, Tleaf)
+
+        if Jmax25 is not None:
+            if self.peaked_Jmax:
+                Jmax = self._peaked_arrhenius(Jmax25, Eaj, Tleaf, deltaSj, Hdj)
+            else:
+                Jmax = self._arrhenius(Jmax25, Eaj, Tleaf)
+
+        if self.adjust_Vcmax_Jmax_for_low_temp:
+            Jmax = self.adj_for_low_temp(Jmax, Tleaf)
+            Vcmax = self.adj_for_low_temp(Vcmax, Tleaf)
+
+        return Km, gamma_star, Vcmax, Jmax, Rd
+
+    def adj_for_low_temp(self, param, Tk, lower_bound=0.0, upper_bound=10.0):
+        """
+        Function allowing Jmax/Vcmax to be forced linearly to zero at low T
+
+        Parameters:
+        ----------
+        Tk : float
+            air temperature (Kelvin)
+        """
+        Tc = Tk - c.DEG_2_KELVIN
+
+        if Tc < lower_bound:
+            param = 0.0
+        elif Tc < upper_bound:
+            param *= (Tc - lower_bound) / (upper_bound - lower_bound)
+
+        return param
+
+    def _arrhenius(self, k25, Ea, Tk):
+        """ Temperature dependence of kinetic parameters is described by an
+        Arrhenius function.
+
+        Parameters:
+        ----------
+        k25 : float
+            rate parameter value at 25 degC or 298 K
+        Ea : float
+            activation energy for the parameter [J mol-1]
+        Tk : float
+            leaf temperature [deg K]
+
+        Returns:
+        -------
+        kt : float
+            temperature dependence on parameter
+
+        References:
+        -----------
+        * Medlyn et al. 2002, PCE, 25, 1167-1179.
+        """
+        return k25 * np.exp((Ea * (Tk - 298.15)) / (298.15 * c.RGAS * Tk))
+
+    def _peaked_arrhenius(self, k25, Ea, Tk, deltaS, Hd):
+        """ Temperature dependancy approximated by peaked Arrhenius eqn,
+        accounting for the rate of inhibition at higher temperatures.
+
+        Parameters:
+        ----------
+        k25 : float
+            rate parameter value at 25 degC or 298 K
+        Ea : float
+            activation energy for the parameter [J mol-1]
+        Tk : float
+            leaf temperature [deg K]
+        deltaS : float
+            entropy factor [J mol-1 K-1)
+        Hd : float
+            describes rate of decrease about the optimum temp [J mol-1]
+
+        Returns:
+        -------
+        kt : float
+            temperature dependence on parameter
+
+        References:
+        -----------
+        * Medlyn et al. 2002, PCE, 25, 1167-1179.
+
+        """
+        arg1 = self._arrhenius(k25, Ea, Tk)
+        arg2 = 1.0 + np.exp((298.15 * deltaS - Hd) / (298.15 * c.RGAS))
+        arg3 = 1.0 + np.exp((Tk * deltaS - Hd) / (Tk * c.RGAS))
+
+        return arg1 * arg2 / arg3
 
     def calc_electron_transport_rate(self, Par, Jmax):
         """
@@ -361,143 +484,6 @@ class FarquharC3(object):
         Ci = self.quadratic(a=A, b=B, c=C, large=True)
 
         return Ci
-
-
-    def adj_for_low_temp(self, param, Tk, lower_bound=0.0, upper_bound=10.0):
-        """
-        Function allowing Jmax/Vcmax to be forced linearly to zero at low T
-
-        Parameters:
-        ----------
-        Tk : float
-            air temperature (Kelvin)
-        """
-        Tc = Tk - c.DEG_2_KELVIN
-
-        if Tc < lower_bound:
-            param = 0.0
-        elif Tc < upper_bound:
-            param *= (Tc - lower_bound) / (upper_bound - lower_bound)
-
-        return param
-
-    def check_supplied_args(self, Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25):
-        """ Check the user supplied arguments, either they supply the values
-        at 25 deg C, or the supply Jmax and Vcmax at the measurement temp. It
-        is of course possible they accidentally supply both or a random
-        combination, so raise an exception if so
-
-        Parameters
-        ----------
-        Jmax : float
-            potential rate of electron transport at measurement temperature
-            [deg K]
-        Vcmax : float
-            max rate of rubisco activity at measurement temperature [deg K]
-        Rd : float
-            Day "light" respiration [umol m-2 time unit-1]
-        Jmax25 : float
-            potential rate of electron transport at 25 deg or 298 K
-        Vcmax25 : float
-            max rate of rubisco activity at 25 deg or 298 K
-        Rd25 : float
-            Estimate of respiration rate at the reference temperature 25 deg C
-             or 298 K [deg K]
-
-        Returns
-        -------
-        Nothing
-        """
-        try:
-            if (Rd25 is not None and Jmax25 is not None and
-                Vcmax25 is not None and Vcmax is None and
-                Jmax is None and Rd is None):
-
-                return
-            elif (Rd25 is None and Jmax25 is None and
-                  Vcmax25 is None and Vcmax is not None and
-                  Jmax is not None and Rd is not None):
-
-                return
-
-        except AttributeError:
-            err_msg = "Supplied arguments are a mess!"
-            raise AttributeError(err_msg)
-
-    def calc_michaelis_menten_constants(self, Tleaf):
-        """ Michaelis-Menten constant for O2/CO2, Arrhenius temp dependancy
-        Parameters:
-        ----------
-        Tleaf : float
-            leaf temperature [deg K]
-
-        Returns:
-        Km : float
-
-        """
-        Kc = self.arrh(self.Kc25, self.Ec, Tleaf)
-        Ko = self.arrh(self.Ko25, self.Eo, Tleaf)
-
-        Km = Kc * (1.0 + self.Oi / Ko)
-
-        return Km
-
-    def arrh(self, k25, Ea, Tk):
-        """ Temperature dependence of kinetic parameters is described by an
-        Arrhenius function.
-
-        Parameters:
-        ----------
-        k25 : float
-            rate parameter value at 25 degC or 298 K
-        Ea : float
-            activation energy for the parameter [J mol-1]
-        Tk : float
-            leaf temperature [deg K]
-
-        Returns:
-        -------
-        kt : float
-            temperature dependence on parameter
-
-        References:
-        -----------
-        * Medlyn et al. 2002, PCE, 25, 1167-1179.
-        """
-        return k25 * np.exp((Ea * (Tk - 298.15)) / (298.15 * c.RGAS * Tk))
-
-    def peaked_arrh(self, k25, Ea, Tk, deltaS, Hd):
-        """ Temperature dependancy approximated by peaked Arrhenius eqn,
-        accounting for the rate of inhibition at higher temperatures.
-
-        Parameters:
-        ----------
-        k25 : float
-            rate parameter value at 25 degC or 298 K
-        Ea : float
-            activation energy for the parameter [J mol-1]
-        Tk : float
-            leaf temperature [deg K]
-        deltaS : float
-            entropy factor [J mol-1 K-1)
-        Hd : float
-            describes rate of decrease about the optimum temp [J mol-1]
-
-        Returns:
-        -------
-        kt : float
-            temperature dependence on parameter
-
-        References:
-        -----------
-        * Medlyn et al. 2002, PCE, 25, 1167-1179.
-
-        """
-        arg1 = self.arrh(k25, Ea, Tk)
-        arg2 = 1.0 + np.exp((298.15 * deltaS - Hd) / (298.15 * c.RGAS))
-        arg3 = 1.0 + np.exp((Tk * deltaS - Hd) / (Tk * c.RGAS))
-
-        return arg1 * arg2 / arg3
 
     def assim(self, Ci, gamma_star, a1, a2):
         """calculation of photosynthesis with the limitation defined by the
@@ -551,9 +537,45 @@ class FarquharC3(object):
         if self.model_Q10:
             Rd = Rd25 * Q10**(((Tleaf - c.DEG_2_KELVIN) - Tref) / 10.0)
         else:
-            Rd = self.arrh(Rd25, Ear, Tleaf)
+            Rd = self._arrhenius(Rd25, Ear, Tleaf)
 
         return Rd
+
+    def check_supplied_args(self, Jmax, Vcmax, Rd, Jmax25, Vcmax25, Rd25):
+        """ Check the user supplied arguments, either they supply the values
+        at 25 deg C, or the supply Jmax and Vcmax at the measurement temp. It
+        is of course possible they accidentally supply both or a random
+        combination, so raise an exception if so
+
+        Parameters
+        ----------
+        Jmax : float
+            potential rate of electron transport at measurement temperature
+            [deg K]
+        Vcmax : float
+            max rate of rubisco activity at measurement temperature [deg K]
+        Rd : float
+            Day "light" respiration [umol m-2 time unit-1]
+        Jmax25 : float
+            potential rate of electron transport at 25 deg or 298 K
+        Vcmax25 : float
+            max rate of rubisco activity at 25 deg or 298 K
+        Rd25 : float
+            Estimate of respiration rate at the reference temperature 25 deg C
+             or 298 K [deg K]
+
+        Returns
+        -------
+        Nothing
+        """
+        at_25C = all(x is not None for x in (Jmax25, Vcmax25, Rd25)) and \
+                    all(x is None for x in (Jmax, Vcmax, Rd))
+
+        at_measured = all(x is not None for x in (Jmax, Vcmax, Rd)) and \
+                        all(x is None for x in (Jmax25, Vcmax25, Rd25))
+
+        if not (at_25C or at_measured):
+            raise ValueError("Supplied arguments are a mess!")
 
     def quadratic(self, a=None, b=None, c=None, large=False):
         """ minimilist quadratic solution as root for J solution should always

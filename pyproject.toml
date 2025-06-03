@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coupled_canopy"
+version = "1.0.1"
+description = "Simulates leaf-level photosynthesis and energy balance using coupled canopy models"
+authors = [
+    { name="Martin De Kauwe", email="mdekauwe@gmail.com" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib"
+]
+
+[project.urls]
+Homepage = "https://github.com/mdekauwe/Coupled_Canopy"
+Issues = "https://github.com/mdekauwe/Coupled_Canopy/issues"

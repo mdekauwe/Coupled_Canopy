@@ -18,8 +18,9 @@ __email__ = "mdekauwe@gmail.com"
 
 import math
 import sys
-from utils import calc_esat
-import constants as c
+from coupled_canopy.utils import calc_esat
+from coupled_canopy.utils import constants as c
+
 
 class PenmanMonteith(object):
 

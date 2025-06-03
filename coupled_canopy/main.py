@@ -16,9 +16,10 @@ import numpy as np
 import os
 import math
 
-import constants as c
-from farq import FarquharC3
-from penman_monteith_leaf import PenmanMonteith
+from coupled_canopy.utils import constants as c
+from coupled_canopy.models.farquhar import FarquharC3
+from coupled_canopy.models.penman_monteith_leaf import PenmanMonteith
+
 
 class CoupledModel(object):
     """Iteratively solve leaf temp, Ci, gs and An."""
@@ -78,11 +79,7 @@ class CoupledModel(object):
         et : float
             transpiration (mol H2O m-2 s-1)
         """
-
-        F = FarquharC3(theta_J=0.85, peaked_Jmax=True, peaked_Vcmax=True,
-                       model_Q10=True, gs_model=self.gs_model,
-                       gamma=self.gamma, g0=self.g0,
-                       g1=self.g1, D0=self.D0, alpha=self.alpha)
+        F = self._init_photosynthesis_model()
         P = PenmanMonteith(self.leaf_width, self.SW_abs)
 
         # set initialise values
@@ -96,8 +93,7 @@ class CoupledModel(object):
         #print
 
 
-        iter = 0
-        while True:
+        for i in range(self.iter_max):
             (An, gsc, Ci) = F.calc_photosynthesis(Cs=Cs, Tleaf=Tleaf_K, Par=par,
                                                   Jmax25=self.Jmax25,
                                                   Vcmax25=self.Vcmax25,
@@ -129,19 +125,17 @@ class CoupledModel(object):
             if math.fabs(Tleaf - new_tleaf) < 0.02:
                 break
 
-            if iter > self.iter_max:
-                raise Exception('No convergence: %d' % (iter))
-
             # Update temperature & do another iteration
             Tleaf = new_tleaf
             Tleaf_K = Tleaf + c.DEG_2_KELVIN
 
-            iter += 1
+        else:
+            raise RuntimeError(f'No convergence after {self.iter_max} iterations')
 
         gsw = gsc * c.GSC_2_GSW
 
         if et < 0.0:
-            raise Exception("ET shouldn't be negative, issue in energy balance")
+            raise ValueError("ET shouldn't be negative, issue in energy balance")
 
         return (An, gsw, et, le_et, Cs, Ci)
 
@@ -370,6 +364,11 @@ class CoupledModel(object):
 
         return (et, le_et, gbH, gw)
 
+    def _init_photosynthesis_model(self):
+        return FarquharC3(theta_J=0.85, peaked_Jmax=True, peaked_Vcmax=True,
+                          model_Q10=True, gs_model=self.gs_model,
+                          gamma=self.gamma, g0=self.g0, g1=self.g1,
+                          D0=self.D0, alpha=self.alpha)
 
 if __name__ == '__main__':
 

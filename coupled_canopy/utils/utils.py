@@ -11,7 +11,7 @@ __version__ = "1.0 (16.04.2017)"
 __email__ = "mdekauwe@gmail.com"
 
 import numpy as np
-import constants as c
+from . import constants as c
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
     return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)

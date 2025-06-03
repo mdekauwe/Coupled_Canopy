@@ -12,17 +12,20 @@ __author__ = "Martin De Kauwe"
 __version__ = "1.0 (23.07.2015)"
 __email__ = "mdekauwe@gmail.com"
 
-import sys
-import numpy as np
 import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import numpy as np
 import math
 import matplotlib.pyplot as plt
 
 
-from farq import FarquharC3
-from solve_coupled_An_gs_leaf_temp_transpiration import CoupledModel
-from utils import vpd_to_rh, get_dewpoint, calc_esat
-import constants as c
+from coupled_canopy.models.farquhar import FarquharC3
+from coupled_canopy.main import CoupledModel
+from coupled_canopy.utils import vpd_to_rh, get_dewpoint, calc_esat
+from coupled_canopy.utils import constants as c
+
 
 def get_values2(vpd, Ca, tair, par, pressure, C):
     kpa_2_pa = 1000.
@@ -97,10 +100,10 @@ if __name__ == '__main__':
     (gs, et,
      an, Cs, Ci) = get_values2(vpd, Ca, tair, par, pressure, CM)
 
-    from apsim_co2_response import apsim_co2_response
+    #from apsim_co2_response import apsim_co2_response
 
-    co2_mod = apsim_co2_response(tair, Ca)
-    apsim_an = an * co2_mod
+    #co2_mod = apsim_co2_response(tair, Ca)
+    #apsim_an = an * co2_mod
 
     fig = plt.figure(figsize=(9,6))
     fig.subplots_adjust(hspace=0.1)
@@ -138,7 +141,7 @@ if __name__ == '__main__':
     ax1.plot(Ca, an, "r-", label="Ca")
     ax1.plot(Cs, an, "g-", label="Cs")
     ax1.plot(Ci, an, "b-", label="Ci")
-    ax1.plot(Ca, apsim_an, "k-", label="Apsim")
+    #ax1.plot(Ca, apsim_an, "k-", label="Apsim")
     ax1.legend(numpoints=1, loc="best")
     ax1.set_xlim(0, 1250)
 

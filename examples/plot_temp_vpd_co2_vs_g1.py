@@ -19,9 +19,10 @@ import math
 import matplotlib.pyplot as plt
 
 
-from farq import FarquharC3
-from solve_coupled_An_gs_leaf_temp_transpiration import CoupledModel
-from utils import vpd_to_rh, get_dewpoint, calc_esat
+from coupled_canopy.models.farquhar import FarquharC3
+from coupled_canopy.main import CoupledModel
+from coupled_canopy.utils import vpd_to_rh, get_dewpoint, calc_esat
+from coupled_canopy.utils import constants as c
 
 def get_values(rh, Ca, tair, par, pressure, C):
     kpa_2_pa = 1000.
