@@ -7,7 +7,20 @@ Iteratively solve the intercellular CO<sub>2</sub> concentration (*C*<sub>i</sub
 
 ## Structure
 
-<pre markdown> ``` ## Structure coupled_canopy/ ├── __init__.py # Makes coupled_canopy a package ├── models/ # Core model implementations (Monteith) │ ├── __init__.py │ ├── farquhar.py │ └── penman_monteith_leaf.py ├── utils/ # Utility functions and constants │ ├── __init__.py │ ├── constants.py │ └── utils.py examples/ # Example scripts demonstrating usage ├── plot_A_vs_Ca.py └── ... ``` </pre>
+```plaintext
+coupled_canopy/
+├── __init__.py          # Makes coupled_canopy a package
+├── models/              # Core model implementations (Monteith)
+│   ├── __init__.py
+│   ├── farquhar.py
+│   └── penman_monteith_leaf.py
+├── utils/               # Utility functions and constants
+│   ├── __init__.py
+│   ├── constants.py
+│   └── utils.py
+examples/                # Example scripts demonstrating usage
+├── plot_A_vs_Ca.py
+└── ...
 
 ## Running examples
 
